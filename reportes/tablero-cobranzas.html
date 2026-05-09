@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tablero de Cobranzas — Pinturería Adrián</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f5f6f8;
+    color: #1f2937;
+    padding: 24px;
+    line-height: 1.5;
+  }
+  .container { max-width: 1500px; margin: 0 auto; }
+
+  header {
+    background: #1e3a5f;
+    color: white;
+    padding: 20px 28px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  header h1 { font-size: 22px; font-weight: 600; }
+  header .subtitle { font-size: 13px; opacity: 0.85; margin-top: 4px; }
+
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .kpi {
+    background: white;
+    padding: 18px 22px;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    border-left: 4px solid #1e3a5f;
+  }
+  .kpi.kpi-red { border-left-color: #dc2626; }
+  .kpi.kpi-yellow { border-left-color: #d97706; }
+  .kpi.kpi-green { border-left-color: #059669; }
+  .kpi.kpi-blue { border-left-color: #2563eb; }
+  .kpi.kpi-grey { border-left-color: #6b7280; }
+  .kpi-label { font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+  .kpi-value { font-size: 22px; font-weight: 700; margin-top: 4px; color: #111827; }
+  .kpi-sub { font-size: 12px; color: #6b7280; margin-top: 2px; }
+
+  .toolbar {
+    background: white;
+    padding: 16px 20px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .toolbar input, .toolbar select {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+  }
+  .toolbar input[type="text"] { flex: 1; min-width: 200px; }
+  .btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .btn-primary { background: #1e3a5f; color: white; }
+  .btn-primary:hover { background: #152744; }
+  .btn-success { background: #059669; color: white; }
+  .btn-success:hover { background: #047857; }
+  .btn-secondary { background: #e5e7eb; color: #374151; }
+  .btn-secondary:hover { background: #d1d5db; }
+  .btn-danger { background: #fee2e2; color: #991b1b; padding: 4px 10px; font-size: 12px; }
+  .btn-danger:hover { background: #fecaca; }
+  .btn-wsp {
+    background: #25d366;
+    color: white;
+    padding: 6px 12px;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 2px;
+  }
+  .btn-wsp:hover { background: #1ebe57; }
+  .btn-wsp-pago {
+    background: #128c7e;
+    color: white;
+    padding: 6px 12px;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 2px;
+  }
+  .btn-wsp-pago:hover { background: #0d6e62; }
+
+  table {
+    width: 100%;
+    background: white;
+    border-collapse: collapse;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  thead { background: #f3f4f6; position: sticky; top: 0; }
+  th, td {
+    padding: 11px 14px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 13.5px;
+  }
+  th {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #6b7280;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+  tr:hover { background: #fafbfc; }
+  tr:last-child td { border-bottom: none; }
+
+  td.editable input {
+    border: none;
+    background: transparent;
+    width: 100%;
+    font-size: 13.5px;
+    padding: 4px;
+    border-radius: 4px;
+    font-family: inherit;
+  }
+  td.editable input:focus {
+    background: #fffbeb;
+    outline: 1px solid #fbbf24;
+  }
+  .monto { font-weight: 600; color: #111827; text-align: right; font-variant-numeric: tabular-nums; }
+
+  .status-select {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .status-sin-activar { background: #f3f4f6; color: #4b5563; border-color: #d1d5db; }
+  .status-contactado { background: #fef3c7; color: #92400e; border-color: #fbbf24; }
+  .status-acuerdo { background: #dbeafe; color: #1e40af; border-color: #60a5fa; }
+  .status-cobrado { background: #d1fae5; color: #065f46; border-color: #34d399; }
+  .status-difiere { background: #fee2e2; color: #991b1b; border-color: #f87171; }
+
+  .ant-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+  }
+  .ant-historico { background: #fee2e2; color: #991b1b; }
+  .ant-2024 { background: #fef3c7; color: #92400e; }
+  .ant-2025 { background: #dbeafe; color: #1e40af; }
+  .ant-2026 { background: #e5e7eb; color: #4b5563; }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px;
+    color: #9ca3af;
+  }
+
+  .footer {
+    margin-top: 24px;
+    padding: 16px;
+    text-align: center;
+    color: #9ca3af;
+    font-size: 12px;
+  }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 100;
+    justify-content: center;
+    align-items: center;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  .modal h2 { margin-bottom: 16px; font-size: 18px; }
+  .modal-body { margin-bottom: 20px; }
+  .modal textarea {
+    width: 100%;
+    min-height: 200px;
+    padding: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 13.5px;
+    resize: vertical;
+  }
+  .modal-actions { display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap; }
+
+  @media print {
+    .toolbar, .btn, header { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div>
+      <h1>Tablero de Cobranzas — Pinturería Adrián</h1>
+      <div class="subtitle" id="subtitulo">Cargando datos...</div>
+    </div>
+    <div style="font-size: 13px; opacity: 0.9;" id="fechaActual"></div>
+  </header>
+
+  <div id="alertasContainer" style="margin-bottom:16px;"></div>
+
+  <div class="kpis">
+    <div class="kpi kpi-red">
+      <div class="kpi-label">Sin Activar</div>
+      <div class="kpi-value" id="kpiSinActivar">$0</div>
+      <div class="kpi-sub"><span id="kpiSinActivarCnt">0</span> clientes</div>
+    </div>
+    <div class="kpi kpi-yellow">
+      <div class="kpi-label">Contactados</div>
+      <div class="kpi-value" id="kpiContactado">$0</div>
+      <div class="kpi-sub"><span id="kpiContactadoCnt">0</span> en seguimiento</div>
+    </div>
+    <div class="kpi kpi-blue">
+      <div class="kpi-label">Acuerdo de Pago</div>
+      <div class="kpi-value" id="kpiAcuerdo">$0</div>
+      <div class="kpi-sub"><span id="kpiAcuerdoCnt">0</span> con plan</div>
+    </div>
+    <div class="kpi kpi-grey">
+      <div class="kpi-label">Difiere el Pago</div>
+      <div class="kpi-value" id="kpiDifiere">$0</div>
+      <div class="kpi-sub"><span id="kpiDifiereCnt">0</span> aplazados</div>
+    </div>
+    <div class="kpi kpi-green">
+      <div class="kpi-label">Cobrado</div>
+      <div class="kpi-value" id="kpiCobrado">$0</div>
+      <div class="kpi-sub"><span id="kpiCobradoCnt">0</span> regularizados</div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <input type="text" id="buscar" placeholder="🔍 Buscar por nombre o N° de cliente..." oninput="render()">
+    <select id="filtroEstado" onchange="render()">
+      <option value="">Todos los estados</option>
+      <option value="sin-activar">Sin Activar</option>
+      <option value="contactado">Contactado</option>
+      <option value="acuerdo">Acuerdo de Pago</option>
+      <option value="cobrado">Cobrado</option>
+      <option value="difiere">Difiere el Pago</option>
+    </select>
+    <select id="filtroAntiguedad" onchange="render()">
+      <option value="">Toda antigüedad</option>
+      <option value="historico">Histórico (2023 o antes)</option>
+      <option value="2024">Desde 2024</option>
+      <option value="2025">Desde 2025</option>
+      <option value="2026">Solo 2026</option>
+    </select>
+    <button class="btn btn-primary" onclick="agregarCliente()">+ Cliente</button>
+    <button class="btn btn-success" onclick="document.getElementById('fileInput').click()">📥 Importar CSV nuevo</button>
+    <input type="file" id="fileInput" accept=".csv" style="display:none;" onchange="importarCSV(this.files[0])">
+    <button class="btn btn-secondary" onclick="exportarCSV()">⬇ Exportar CSV</button>
+    <button class="btn btn-secondary" onclick="recargarDesdeOrigen()">↻ Reset al original</button>
+    <button class="btn btn-secondary" onclick="if(confirm('¿Borrar todos los datos guardados localmente?')) { localStorage.removeItem(STORAGE_KEY); location.reload(); }">🗑 Limpiar</button>
+  </div>
+
+  <div id="importReport" style="display:none; background:#ecfdf5; border-left:4px solid #059669; padding:14px 18px; border-radius:8px; margin-bottom:16px;">
+    <strong style="color:#065f46;">Importación completada</strong>
+    <div id="importReportBody" style="font-size:14px; color:#065f46; margin-top:6px;"></div>
+    <button onclick="document.getElementById('importReport').style.display='none'" style="background:none; border:none; cursor:pointer; color:#065f46; float:right; margin-top:-22px; font-size:18px;">×</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>N°</th>
+        <th>Nombre</th>
+        <th>Antigüedad</th>
+        <th>Teléfono</th>
+        <th style="text-align:right;">Monto Deuda</th>
+        <th>Estado</th>
+        <th>Notas</th>
+        <th style="text-align:center;">Acciones</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+
+  <div class="footer">
+    Datos guardados localmente en este navegador • Pinturería Adrián © <span id="anio"></span>
+  </div>
+
+</div>
+
+<div class="modal-overlay" id="modalMsg">
+  <div class="modal">
+    <h2 id="modalTitulo">Mensaje de WhatsApp</h2>
+    <div class="modal-body">
+      <textarea id="modalTexto"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="copiarMensaje()">📋 Copiar</button>
+      <button class="btn btn-wsp" onclick="abrirWspDesdeModal()">📱 Abrir en WhatsApp</button>
+      <button class="btn btn-secondary" onclick="cerrarModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'pintureriaCobranzas_v2';
+let snapshotCompleto = null;
+let snapshotLimpio = null;
+let datosHistoricos = {};
+
+// ============================================================
+// CARGAR SNAPSHOTS JSON DEL SISTEMA AUTOMATIZADO
+// ============================================================
+async function cargarSnapshots() {
+  try {
+    // Cargar desde la misma carpeta (se actualizan cada lunes)
+    const respCompl = await fetch('./snapshot_cobranzas.json')
+      .catch(() => null);
+    if (respCompl?.ok) {
+      snapshotCompleto = await respCompl.json();
+    }
+
+    const respLimpio = await fetch('./snapshot_cobranzas_limpio.json')
+      .catch(() => null);
+    if (respLimpio?.ok) {
+      snapshotLimpio = await respLimpio.json();
+    }
+  } catch (e) {
+    console.log('No se pudieron cargar snapshots JSON (modo offline)');
+  }
+}
+
+// Fallback: CLIENTES INICIALES DEL CSV ORIGINAL
+const CLIENTES_INICIALES = [
+  { nro: '161', nombre: 'Garay Enrique',          monto: 4261751.00, antiguedad: '2025' },
+  { nro: '651', nombre: 'Cuenca Nelson',          monto: 3647089.38, antiguedad: 'historico' },
+  { nro: '20',  nombre: 'Garay Adrian',           monto: 2386158.83, antiguedad: '2025' },
+  { nro: '1038',nombre: 'Fasino Franco',          monto: 653029.00,  antiguedad: '2026' },
+  { nro: '806', nombre: 'Ramallo Martin',         monto: 641639.23,  antiguedad: '2024' },
+  { nro: '124', nombre: 'Mondino Natalia',        monto: 567652.93,  antiguedad: '2026' },
+  { nro: '276', nombre: 'Rivero Cristian',        monto: 493458.40,  antiguedad: '2026' },
+  { nro: '677', nombre: 'Franco Elba',            monto: 477722.83,  antiguedad: '2026' },
+  { nro: '224', nombre: 'Bertone Ruben',          monto: 454533.71,  antiguedad: '2026' },
+  { nro: '13',  nombre: 'Coraglia Ariel',         monto: 377053.96,  antiguedad: '2026' },
+  { nro: '166', nombre: 'Ormaechea Maximiliano',  monto: 259519.43,  antiguedad: '2025' },
+  { nro: '761', nombre: 'Imhof Carlos',           monto: 243035.30,  antiguedad: '2025' },
+  { nro: '871', nombre: 'Bonetti Marcelo',        monto: 208365.06,  antiguedad: '2026' },
+  { nro: '93',  nombre: 'Rossi Alejandra',        monto: 208773.36,  antiguedad: '2024' },
+  { nro: '122', nombre: 'Porporato Rene',         monto: 208189.20,  antiguedad: '2026' },
+  { nro: '40',  nombre: 'Martino Jorge',          monto: 205264.05,  antiguedad: '2026' },
+  { nro: '274', nombre: 'Faulkner Nazareno',      monto: 201703.85,  antiguedad: '2025' },
+  { nro: '479', nombre: 'Grimaldi German',        monto: 197116.83,  antiguedad: '2025' },
+  { nro: '281', nombre: 'Alvarez Ramon',          monto: 188698.78,  antiguedad: '2025' },
+  { nro: '508', nombre: 'Bomberos Voluntarios Ramona', monto: 185342.17, antiguedad: '2026' },
+  { nro: '330', nombre: 'Bessone Ruben',          monto: 172559.55,  antiguedad: '2025' },
+  { nro: '583', nombre: 'Guillen Ruben',          monto: 169171.12,  antiguedad: '2026' },
+  { nro: '809', nombre: 'Celiz Lucas',            monto: 138285.32,  antiguedad: '2025' },
+  { nro: '708', nombre: 'Leiva Lelo',             monto: 128164.52,  antiguedad: '2024' },
+  { nro: '89',  nombre: 'Vazquez Diego',          monto: 127102.88,  antiguedad: '2025' },
+  { nro: '348', nombre: 'Masuero Emiliano',       monto: 110917.12,  antiguedad: '2026' },
+  { nro: '373', nombre: 'Porporato Silvana',      monto: 107875.15,  antiguedad: '2026' },
+  { nro: '31',  nombre: 'Maletto Lidney E Hijos', monto: 95288.92,   antiguedad: '2026' },
+  { nro: '465', nombre: 'Poliotto Romina',        monto: 94161.93,   antiguedad: '2026' },
+  { nro: '684', nombre: 'Masuero Emanuel',        monto: 86082.08,   antiguedad: '2025' },
+  { nro: '384', nombre: 'Cerra Pablo',            monto: 83013.57,   antiguedad: '2026' },
+  { nro: '113', nombre: 'Ormaechea Luis',         monto: 81047.38,   antiguedad: '2025' },
+  { nro: '114', nombre: 'Stefanetto Judith',      monto: 79624.21,   antiguedad: '2026' },
+  { nro: '96',  nombre: 'Ardiles Cruz',           monto: 77206.11,   antiguedad: 'historico' },
+  { nro: '256', nombre: 'Derotier Ivan',          monto: 69730.82,   antiguedad: 'historico' },
+  { nro: '246', nombre: 'Antonioz Ariel',         monto: 64959.64,   antiguedad: '2026' },
+  { nro: '409', nombre: 'Pairone Victor',         monto: 55431.36,   antiguedad: '2026' },
+  { nro: '48',  nombre: 'Stefanetto Ivan',        monto: 53723.63,   antiguedad: '2026' },
+  { nro: '79',  nombre: 'Rolandi Juan',           monto: 52187.89,   antiguedad: '2026' },
+  { nro: '184', nombre: 'Franco Ricardo',         monto: 51311.56,   antiguedad: '2024' },
+  { nro: '1016',nombre: 'Gutierrez Silvina',      monto: 51191.05,   antiguedad: '2025' },
+  { nro: '1001',nombre: 'Carballo Javier',        monto: 50438.43,   antiguedad: '2025' },
+  { nro: '513', nombre: 'Platini Matias',         monto: 50337.40,   antiguedad: '2025' },
+  { nro: '378', nombre: 'Ococha',                 monto: 48922.97,   antiguedad: '2026' },
+  { nro: '486', nombre: 'Ledesma Juan',           monto: 43500.78,   antiguedad: '2025' },
+  { nro: '932', nombre: 'Rico Monica',            monto: 43500.00,   antiguedad: '2025' },
+  { nro: '33',  nombre: 'Alessandria Carlos',     monto: 42364.80,   antiguedad: '2025' },
+  { nro: '29',  nombre: 'Comuna De Ramona',       monto: 42302.82,   antiguedad: '2026' },
+  { nro: '364', nombre: 'Salusso Edgar',          monto: 41537.16,   antiguedad: '2026' },
+  { nro: '549', nombre: 'Apendino Sebatian',      monto: 39142.73,   antiguedad: 'historico' },
+  { nro: '35',  nombre: 'Andermatten Carlos',     monto: 38949.21,   antiguedad: '2024' },
+  { nro: '255', nombre: 'Antonioz Carlos',        monto: 38364.53,   antiguedad: '2025' },
+  { nro: '240', nombre: 'Lacteos Ramolac',        monto: 37376.80,   antiguedad: '2025' },
+  { nro: '1',   nombre: 'Rossi Martin',           monto: 37364.80,   antiguedad: '2025' },
+  { nro: '128', nombre: 'Bataglino Dario',        monto: 34467.70,   antiguedad: '2026' },
+  { nro: '80',  nombre: 'Sabolo Sebastian',       monto: 34121.84,   antiguedad: '2026' },
+  { nro: '28',  nombre: 'Barrera Luis Miguel',    monto: 32942.03,   antiguedad: '2026' },
+  { nro: '3',   nombre: 'Caglieris Omar',         monto: 30061.61,   antiguedad: '2025' },
+  { nro: '137', nombre: 'Antonioz Gabriel',       monto: 29573.13,   antiguedad: '2026' },
+  { nro: '49',  nombre: 'Domingo Faustino Sarmiento 382', monto: 25736.24, antiguedad: '2026' },
+  { nro: '661', nombre: 'Gentineti Gustavo',      monto: 24087.46,   antiguedad: '2024' },
+  { nro: '395', nombre: 'Garcia Ramon',           monto: 21144.58,   antiguedad: '2025' },
+  { nro: '25',  nombre: 'Peiretti Hector',        monto: 21262.00,   antiguedad: '2026' },
+  { nro: '52',  nombre: 'Museo',                  monto: 20976.25,   antiguedad: '2025' },
+  { nro: '1036',nombre: 'Ruiz',                   monto: 20519.80,   antiguedad: '2026' },
+  { nro: '839', nombre: 'Mapelli Hugo',           monto: 19501.90,   antiguedad: '2025' },
+  { nro: '68',  nombre: 'Arce Sergio',            monto: 19374.12,   antiguedad: '2024' },
+  { nro: '1003',nombre: 'Quiroga Maxi',           monto: 18691.22,   antiguedad: '2025' },
+  { nro: '191', nombre: 'Feriger Ramon',          monto: 18628.15,   antiguedad: '2026' },
+  { nro: '813', nombre: 'Salusso Pancho',         monto: 18092.85,   antiguedad: '2026' },
+  { nro: '175', nombre: 'Rickert Jose',           monto: 18000.00,   antiguedad: '2026' },
+  { nro: '673', nombre: 'Erard Jose',             monto: 16272.38,   antiguedad: 'historico' },
+  { nro: '773', nombre: 'Rios Sebastian',         monto: 15955.81,   antiguedad: 'historico' },
+  { nro: '183', nombre: 'Valdemarin Raul Pedro Jose', monto: 14400.00, antiguedad: '2026' },
+  { nro: '78',  nombre: 'Mapelli Pablo',          monto: 14001.44,   antiguedad: '2026' },
+  { nro: '314', nombre: 'Schaab Omar',            monto: 13217.75,   antiguedad: '2025' },
+  { nro: '695', nombre: 'Alesandria Rodrigo',     monto: 12401.50,   antiguedad: '2025' },
+  { nro: '300', nombre: 'Rikert Jorge',           monto: 11791.21,   antiguedad: 'historico' },
+  { nro: '1030',nombre: 'Carillo Ezequiel',       monto: 11616.73,   antiguedad: '2026' },
+  { nro: '514', nombre: 'Gutierrez Mariano',      monto: 11365.63,   antiguedad: 'historico' },
+  { nro: '906', nombre: 'Lara Hugo',              monto: 10888.38,   antiguedad: '2024' },
+  { nro: '876', nombre: 'Vicedo Rico Monica',     monto: 9677.30,    antiguedad: '2025' },
+  { nro: '155', nombre: 'Bilche Federico',        monto: 9116.25,    antiguedad: '2025' },
+  { nro: '521', nombre: 'Cuenca Bruno',           monto: 9116.25,    antiguedad: '2026' },
+  { nro: '26',  nombre: 'Tesio Mauricio',         monto: 8441.12,    antiguedad: '2026' },
+  { nro: '560', nombre: 'Sobrero Jesica',         monto: 8005.65,    antiguedad: '2025' },
+  { nro: '203', nombre: 'Grimaldi Diego',         monto: 7859.99,    antiguedad: 'historico' },
+  { nro: '1019',nombre: 'Carnero Lore',           monto: 7200.00,    antiguedad: '2025' },
+  { nro: '700', nombre: 'Bataglino Emanuel',      monto: 7077.79,    antiguedad: '2025' },
+  { nro: '244', nombre: 'Luciano Mauro',          monto: 6708.00,    antiguedad: '2026' },
+  { nro: '1012',nombre: 'Anthonioz Rosa',         monto: 5691.03,    antiguedad: '2025' },
+  { nro: '698', nombre: 'Galfre Hernan',          monto: 5482.37,    antiguedad: '2024' },
+  { nro: '762', nombre: 'Quinteros Nelly',        monto: 5191.78,    antiguedad: '2026' },
+  { nro: '745', nombre: 'Ovena Jorge',            monto: 3727.02,    antiguedad: '2026' },
+  { nro: '478', nombre: 'Ñañes Cristian',         monto: 1120.08,    antiguedad: 'historico' }
+];
+
+const ESTADOS = {
+  'sin-activar':  { label: 'Sin Activar',     clase: 'status-sin-activar' },
+  'contactado':   { label: 'Contactado',      clase: 'status-contactado'  },
+  'acuerdo':      { label: 'Acuerdo de Pago', clase: 'status-acuerdo'     },
+  'cobrado':      { label: 'Cobrado',         clase: 'status-cobrado'     },
+  'difiere':      { label: 'Difiere el Pago', clase: 'status-difiere'     }
+};
+
+const ANTIGUEDAD = {
+  'historico': { label: 'Histórico ≤2023', clase: 'ant-historico' },
+  '2024':      { label: 'Desde 2024',      clase: 'ant-2024' },
+  '2025':      { label: 'Desde 2025',      clase: 'ant-2025' },
+  '2026':      { label: 'Solo 2026',       clase: 'ant-2026' }
+};
+
+let clientes = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+let modalTelefono = '';
+let modalCliente = null;
+let modalTipo = 'recordatorio';
+
+// Inicializar: cargar snapshots y después renderizar
+(async () => {
+  await cargarSnapshots();
+  if (!clientes) clientes = inicializarDesdeOriginal();
+  actualizarDesdeSummary();
+  render();
+})();
+
+function inicializarDesdeOriginal() {
+  return CLIENTES_INICIALES.map((c, i) => ({
+    id: 1000 + i,
+    nombre: c.nombre,
+    nroCliente: c.nro,
+    telefono: '',
+    monto: c.monto,
+    antiguedad: c.antiguedad,
+    estado: 'sin-activar',
+    notas: ''
+  }));
+}
+
+function actualizarDesdeSummary() {
+  // Actualizar datos desde snapshots si están disponibles
+  if (snapshotLimpio) {
+    const sub = snapshotLimpio.fecha_csv ? snapshotLimpio.fecha_csv : 'fecha desconocida';
+    document.getElementById('subtitulo').textContent =
+      `Deuda limpia (sin 3 mega-deudores) • Datos al ${sub} • ${snapshotLimpio.clientes_activos} clientes`;
+    datosHistoricos = {
+      deudaTotalLimpia: snapshotLimpio.deuda_total_LIMPIA || 0,
+      clientesLimpio: snapshotLimpio.clientes_activos || 0
+    };
+  }
+  if (snapshotCompleto) {
+    datosHistoricos.deudaTotalCompleta = snapshotCompleto.deuda_total || 0;
+    datosHistoricos.clientesCompleto = snapshotCompleto.clientes_activos || 0;
+  }
+}
+
+function recargarDesdeOrigen() {
+  if (!confirm('Esto va a reemplazar TODOS los datos con los del CSV original (perdés estados y notas que hayas cargado). ¿Seguir?')) return;
+  clientes = inicializarDesdeOriginal();
+  guardar();
+}
+
+function fmt(monto) {
+  return '$' + Number(monto || 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function guardar() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(clientes));
+  render();
+}
+
+function agregarCliente() {
+  clientes.unshift({
+    id: Date.now(),
+    nombre: '',
+    nroCliente: '',
+    telefono: '',
+    monto: 0,
+    antiguedad: '2026',
+    estado: 'sin-activar',
+    notas: ''
+  });
+  guardar();
+}
+
+function eliminarCliente(id) {
+  if (!confirm('¿Eliminar este cliente del tablero?')) return;
+  clientes = clientes.filter(c => c.id !== id);
+  guardar();
+}
+
+function actualizar(id, campo, valor) {
+  const c = clientes.find(c => c.id === id);
+  if (!c) return;
+  if (campo === 'monto') valor = parseFloat(valor) || 0;
+  c[campo] = valor;
+  guardar();
+}
+
+function limpiarTel(tel) {
+  let n = (tel || '').replace(/\D/g, '');
+  if (!n) return '';
+  if (n.startsWith('54')) return n;
+  if (n.startsWith('0')) n = n.substring(1);
+  return '549' + n;
+}
+
+function generarMensajeRecordatorio(c) {
+  const primerNombre = (c.nombre || '').split(' ')[0] || '[Nombre]';
+  return `Hola ${primerNombre}, ¿cómo va? Te comentamos que estuvimos revisando las cuentas en Pinturería Adrián y el saldo pendiente es de ${fmt(c.monto)}. Te avisamos para que no se nos amontone con lo nuevo y lo tengamos al día. Gracias y cualquier consulta estamos en contacto!`;
+}
+
+function generarMensajePago(c) {
+  const primerNombre = (c.nombre || '').split(' ')[0] || '[Nombre]';
+  return `¡Genial ${primerNombre}! Te paso los datos para que puedas saldar tu cuenta:
+
+💵 *EFECTIVO*: te esperamos en el local.
+
+🏦 *TRANSFERENCIA*:
+Alias: *ROSSIS.REGIONAL*
+Titular: Rossi Santiago
+Banco: Coinag / Agilpagos
+
+Cuando hagas la transferencia mandanos el comprobante por acá y te confirmamos la imputación. ¡Gracias!`;
+}
+
+function abrirWsp(cliente, tipo) {
+  modalCliente = cliente;
+  modalTipo = tipo;
+  const msg = tipo === 'pago' ? generarMensajePago(cliente) : generarMensajeRecordatorio(cliente);
+  const tel = limpiarTel(cliente.telefono);
+  modalTelefono = tel;
+  document.getElementById('modalTitulo').textContent = tipo === 'pago' ? '💰 Datos de Pago — ' + cliente.nombre : '📱 Recordatorio — ' + cliente.nombre;
+  document.getElementById('modalTexto').value = msg;
+  document.getElementById('modalMsg').classList.add('active');
+}
+
+function cerrarModal() {
+  document.getElementById('modalMsg').classList.remove('active');
+}
+
+function copiarMensaje() {
+  const txt = document.getElementById('modalTexto');
+  txt.select();
+  navigator.clipboard?.writeText(txt.value).then(() => {
+    alert('Mensaje copiado ✓');
+  }).catch(() => {
+    document.execCommand('copy');
+    alert('Mensaje copiado ✓');
+  });
+}
+
+function abrirWspDesdeModal() {
+  const msg = document.getElementById('modalTexto').value;
+  if (!modalTelefono) {
+    if (!confirm('Este cliente no tiene teléfono cargado. ¿Querés copiar el mensaje al portapapeles?')) return;
+    copiarMensaje();
+    return;
+  }
+  const url = `https://wa.me/${modalTelefono}?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
+  // Si es recordatorio, sugerir cambiar estado a "Contactado"
+  if (modalTipo === 'recordatorio' && modalCliente && modalCliente.estado === 'sin-activar') {
+    setTimeout(() => {
+      if (confirm(`¿Marcar a ${modalCliente.nombre} como "Contactado"?`)) {
+        actualizar(modalCliente.id, 'estado', 'contactado');
+      }
+    }, 500);
+  }
+  cerrarModal();
+}
+
+function render() {
+  const buscar = (document.getElementById('buscar').value || '').toLowerCase();
+  const filtroEstado = document.getElementById('filtroEstado').value;
+  const filtroAnt = document.getElementById('filtroAntiguedad').value;
+  const tbody = document.getElementById('tbody');
+
+  // Mostrar alertas si existen
+  if (snapshotLimpio && snapshotLimpio.alertas_limpio) {
+    const alertasDiv = document.getElementById('alertasContainer');
+    const alertasHtml = snapshotLimpio.alertas_limpio.map((a, i) => {
+      const tipo = a.toLowerCase().includes('nuevo') ? 'yellow' :
+                   a.toLowerCase().includes('creció') ? 'red' : 'blue';
+      const color = tipo === 'red' ? '#dc2626' : tipo === 'yellow' ? '#d97706' : '#2563eb';
+      const bgColor = tipo === 'red' ? '#fee2e2' : tipo === 'yellow' ? '#fef3c7' : '#dbeafe';
+      return `<div style="background:${bgColor};border-left:4px solid ${color};padding:10px 14px;border-radius:6px;margin-bottom:8px;font-size:13px;color:#1f2937;">⚠️ ${a}</div>`;
+    }).join('');
+    alertasDiv.innerHTML = alertasHtml;
+  }
+
+  // KPIs de ESTADO de cobranza (TRACKING)
+  let sinAct = 0, cont = 0, acu = 0, dif = 0, cob = 0;
+  let cntSinAct = 0, cntCont = 0, cntAcu = 0, cntDif = 0, cntCob = 0;
+  clientes.forEach(c => {
+    const m = Number(c.monto) || 0;
+    if (c.estado === 'sin-activar') { sinAct += m; cntSinAct++; }
+    if (c.estado === 'contactado')  { cont += m; cntCont++; }
+    if (c.estado === 'acuerdo')     { acu += m; cntAcu++; }
+    if (c.estado === 'difiere')     { dif += m; cntDif++; }
+    if (c.estado === 'cobrado')     { cob += m; cntCob++; }
+  });
+  document.getElementById('kpiSinActivar').textContent = fmt(sinAct);
+  document.getElementById('kpiSinActivarCnt').textContent = cntSinAct;
+  document.getElementById('kpiContactado').textContent = fmt(cont);
+  document.getElementById('kpiContactadoCnt').textContent = cntCont;
+  document.getElementById('kpiAcuerdo').textContent = fmt(acu);
+  document.getElementById('kpiAcuerdoCnt').textContent = cntAcu;
+  document.getElementById('kpiDifiere').textContent = fmt(dif);
+  document.getElementById('kpiDifiereCnt').textContent = cntDif;
+  document.getElementById('kpiCobrado').textContent = fmt(cob);
+  document.getElementById('kpiCobradoCnt').textContent = cntCob;
+
+  const filtrados = clientes.filter(c => {
+    const matchBuscar = !buscar ||
+      (c.nombre || '').toLowerCase().includes(buscar) ||
+      (c.nroCliente || '').toLowerCase().includes(buscar);
+    const matchEst = !filtroEstado || c.estado === filtroEstado;
+    const matchAnt = !filtroAnt || c.antiguedad === filtroAnt;
+    return matchBuscar && matchEst && matchAnt;
+  });
+
+  if (filtrados.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No hay clientes que coincidan con los filtros.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtrados.map(c => {
+    const est = ESTADOS[c.estado] || ESTADOS['sin-activar'];
+    const ant = ANTIGUEDAD[c.antiguedad] || ANTIGUEDAD['2026'];
+    return `
+      <tr>
+        <td class="editable" style="width:70px;"><input type="text" value="${escapeHtml(c.nroCliente)}" onchange="actualizar(${c.id}, 'nroCliente', this.value)"></td>
+        <td class="editable" style="min-width:200px;"><input type="text" value="${escapeHtml(c.nombre)}" onchange="actualizar(${c.id}, 'nombre', this.value)"></td>
+        <td>
+          <select class="ant-badge ${ant.clase}" onchange="actualizar(${c.id}, 'antiguedad', this.value)" style="border:none; cursor:pointer;">
+            ${Object.entries(ANTIGUEDAD).map(([k,v]) => `<option value="${k}" ${c.antiguedad===k?'selected':''}>${v.label}</option>`).join('')}
+          </select>
+        </td>
+        <td class="editable" style="width:140px;"><input type="text" value="${escapeHtml(c.telefono)}" onchange="actualizar(${c.id}, 'telefono', this.value)" placeholder="Cargar..."></td>
+        <td class="monto editable" style="width:140px;"><input type="number" value="${c.monto}" onchange="actualizar(${c.id}, 'monto', this.value)" style="text-align:right;" step="0.01"></td>
+        <td>
+          <select class="status-select ${est.clase}" onchange="actualizar(${c.id}, 'estado', this.value)">
+            ${Object.entries(ESTADOS).map(([k,v]) => `<option value="${k}" ${c.estado===k?'selected':''}>${v.label}</option>`).join('')}
+          </select>
+        </td>
+        <td class="editable" style="min-width:140px;"><input type="text" value="${escapeHtml(c.notas)}" onchange="actualizar(${c.id}, 'notas', this.value)" placeholder="..."></td>
+        <td style="text-align:center; white-space:nowrap;">
+          <button class="btn btn-wsp" onclick='abrirWsp(${JSON.stringify(c).replace(/'/g, "&apos;")}, "recordatorio")' title="Recordatorio">📱 Recordar</button>
+          <button class="btn btn-wsp-pago" onclick='abrirWsp(${JSON.stringify(c).replace(/'/g, "&apos;")}, "pago")' title="Datos de pago">💰 Pago</button>
+          <button class="btn btn-danger" onclick="eliminarCliente(${c.id})" title="Eliminar">✕</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+// ============================================================
+// IMPORTACIÓN DE CSV — merge inteligente
+// ============================================================
+// Lee un CSV con el mismo formato que "VTOAS A COBRAR XX-X.csv"
+// y actualiza el tablero conservando teléfono, estado y notas
+// que ya cargaste manualmente.
+// ============================================================
+function parsearCSVVencimientos(texto) {
+  const lines = texto.split(/\r?\n/);
+  const clientes = [];
+  let current = null;
+
+  for (const line of lines) {
+    const parts = line.split(';');
+    if (parts.length < 5) continue;
+
+    // Encabezado de cliente: ";<NUM> <NOMBRE>;;;"
+    if (parts[0] === '' && parts[1] && !parts[2] && !parts[3] &&
+        parts[1] !== 'Total del Cliente' &&
+        !parts[1].startsWith('Total de todos')) {
+      const m = parts[1].trim().match(/^(\d+)\s+(.+)$/);
+      if (m) {
+        current = { nro: m[1], nombre: m[2].trim(), monto: 0, años: new Set() };
+      }
+    }
+    // Total del cliente
+    else if (parts[1] === 'Total del Cliente' && current) {
+      const montoStr = (parts[3] || '').replace(/\./g, '').replace(',', '.');
+      current.monto = parseFloat(montoStr) || 0;
+      if (current.monto > 0) clientes.push(current); // descartar saldos ≤ 0
+      current = null;
+    }
+    // Detalle (para detectar antigüedad)
+    else if (current && parts[0]) {
+      const fechaMatch = parts[0].match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (fechaMatch) current.años.add(parseInt(fechaMatch[3]));
+    }
+  }
+
+  // Calcular antigüedad
+  return clientes.map(c => {
+    let antiguedad = '2026';
+    if (c.años.size > 0) {
+      const min = Math.min(...c.años);
+      if (min <= 2023) antiguedad = 'historico';
+      else if (min === 2024) antiguedad = '2024';
+      else if (min === 2025) antiguedad = '2025';
+      else antiguedad = '2026';
+    }
+    return { nro: c.nro, nombre: titleCase(c.nombre), monto: c.monto, antiguedad };
+  });
+}
+
+function titleCase(s) {
+  return (s || '').toLowerCase().replace(/(^|\s|\-)\S/g, t => t.toUpperCase());
+}
+
+function importarCSV(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const texto = e.target.result;
+      const nuevos = parsearCSVVencimientos(texto);
+      if (nuevos.length === 0) {
+        alert('No se detectaron clientes en el CSV. Asegurate de que el formato sea el de "VTOAS A COBRAR".');
+        return;
+      }
+      mergearClientes(nuevos);
+    } catch (err) {
+      alert('Error al procesar el CSV: ' + err.message);
+    }
+  };
+  reader.readAsText(file, 'UTF-8');
+  // Reset el input para permitir reimportar el mismo archivo
+  document.getElementById('fileInput').value = '';
+}
+
+function mergearClientes(nuevosClientes) {
+  // Indexar lo nuevo por N° de cliente
+  const nuevosIdx = {};
+  nuevosClientes.forEach(c => { nuevosIdx[c.nro] = c; });
+
+  // Indexar lo actual por N° de cliente
+  const actualesIdx = {};
+  clientes.forEach(c => { if (c.nroCliente) actualesIdx[c.nroCliente] = c; });
+
+  let actualizados = 0, agregados = 0, marcadosCobrados = 0;
+  const cambiosMonto = [];
+
+  // 1. Recorrer los nuevos: actualizar o agregar
+  nuevosClientes.forEach(n => {
+    const existente = actualesIdx[n.nro];
+    if (existente) {
+      // Actualizar monto y antigüedad, MANTENER teléfono/estado/notas
+      if (Math.abs(existente.monto - n.monto) > 0.01) {
+        cambiosMonto.push({
+          nombre: existente.nombre,
+          antes: existente.monto,
+          ahora: n.monto,
+          delta: n.monto - existente.monto
+        });
+      }
+      existente.monto = n.monto;
+      existente.antiguedad = n.antiguedad;
+      // Si estaba marcado como "cobrado" pero reapareció con deuda, lo reactivamos
+      if (existente.estado === 'cobrado' && n.monto > 0) {
+        existente.estado = 'sin-activar';
+      }
+      actualizados++;
+    } else {
+      // Cliente nuevo
+      clientes.push({
+        id: Date.now() + Math.random(),
+        nombre: n.nombre,
+        nroCliente: n.nro,
+        telefono: '',
+        monto: n.monto,
+        antiguedad: n.antiguedad,
+        estado: 'sin-activar',
+        notas: 'Nuevo del último import'
+      });
+      agregados++;
+    }
+  });
+
+  // 2. Recorrer los actuales: si no aparecen en el nuevo CSV, marcar como cobrado
+  // (a menos que ya estén marcados como cobrado)
+  clientes.forEach(c => {
+    if (!c.nroCliente) return;
+    if (!nuevosIdx[c.nroCliente] && c.estado !== 'cobrado') {
+      c.estado = 'cobrado';
+      c.notas = (c.notas ? c.notas + ' | ' : '') + 'Sin saldo en último CSV — auto-cobrado';
+      marcadosCobrados++;
+    }
+  });
+
+  guardar();
+
+  // Mostrar reporte
+  const div = document.getElementById('importReport');
+  const body = document.getElementById('importReportBody');
+  let html = `Se procesaron <strong>${nuevosClientes.length}</strong> clientes del CSV. `;
+  html += `<strong>${actualizados}</strong> actualizados, `;
+  html += `<strong>${agregados}</strong> nuevos agregados, `;
+  html += `<strong>${marcadosCobrados}</strong> marcados como cobrados (no aparecían en el nuevo CSV).`;
+  if (cambiosMonto.length > 0) {
+    cambiosMonto.sort((a,b) => Math.abs(b.delta) - Math.abs(a.delta));
+    const top5 = cambiosMonto.slice(0, 5);
+    html += `<br><br><strong>Top cambios de monto:</strong><br>`;
+    top5.forEach(c => {
+      const signo = c.delta > 0 ? '+' : '';
+      const color = c.delta > 0 ? '#dc2626' : '#059669';
+      html += `<span style="font-size:13px;">• ${c.nombre}: ${fmt(c.antes)} → ${fmt(c.ahora)} <span style="color:${color}">(${signo}${fmt(c.delta).replace('$','$')})</span></span><br>`;
+    });
+    if (cambiosMonto.length > 5) html += `<span style="font-size:12px; color:#6b7280;">...y ${cambiosMonto.length-5} más</span>`;
+  }
+  body.innerHTML = html;
+  div.style.display = 'block';
+  div.scrollIntoView({ behavior: 'smooth' });
+}
+
+function exportarCSV() {
+  if (clientes.length === 0) { alert('No hay datos para exportar.'); return; }
+  const filas = [['N° Cliente','Nombre','Antigüedad','Teléfono','Monto','Estado','Notas']];
+  clientes.forEach(c => filas.push([
+    c.nroCliente,
+    c.nombre,
+    ANTIGUEDAD[c.antiguedad]?.label || c.antiguedad,
+    c.telefono,
+    c.monto,
+    ESTADOS[c.estado]?.label || c.estado,
+    c.notas
+  ]));
+  const csv = filas.map(f => f.map(x => `"${String(x||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const fecha = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = `gestion-cobranzas-${fecha}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function setFechaActual() {
+  const hoy = new Date();
+  const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  document.getElementById('fechaActual').textContent = hoy.toLocaleDateString('es-AR', opciones);
+  document.getElementById('anio').textContent = hoy.getFullYear();
+}
+
+setFechaActual();
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarModal(); });
+document.getElementById('modalMsg').addEventListener('click', e => {
+  if (e.target.id === 'modalMsg') cerrarModal();
+});
+</script>
+</body>
+</html>

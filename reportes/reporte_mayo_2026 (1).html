@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pinturería Adrián · Informe Mayo 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --bg:        #09090b;
+    --surface:   #111113;
+    --surface2:  #18181b;
+    --border:    rgba(255,255,255,0.08);
+    --border2:   rgba(255,255,255,0.14);
+    --text:      #fafafa;
+    --muted:     #a1a1aa;
+    --faint:     #52525b;
+    --accent:    #e4e4e7;
+    --blue:      #3b82f6;
+    --blue-dim:  rgba(59,130,246,0.12);
+    --green:     #22c55e;
+    --green-dim: rgba(34,197,94,0.12);
+    --amber:     #f59e0b;
+    --amber-dim: rgba(245,158,11,0.12);
+    --red:       #ef4444;
+    --red-dim:   rgba(239,68,68,0.12);
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+    --r-sm: 6px;
+    --r-md: 10px;
+    --r-lg: 14px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  body { max-width: 960px; margin: 0 auto; padding: 48px 24px 80px; }
+  .header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 48px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+  .header-left h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.5px; color: var(--text); }
+  .header-left p { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .header-badge { font-family: var(--mono); font-size: 11px; background: var(--surface2); border: 1px solid var(--border2); color: var(--muted); padding: 6px 12px; border-radius: var(--r-sm); letter-spacing: .04em; }
+  .section { margin-bottom: 48px; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .section-num { font-family: var(--mono); font-size: 11px; color: var(--faint); }
+  .section-title { font-size: 13px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .section-flag { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: var(--r-sm); margin-left: auto; }
+  .flag-ok  { background: var(--green-dim); color: var(--green); }
+  .flag-warn{ background: var(--amber-dim); color: var(--amber); }
+  .flag-bad { background: var(--red-dim);   color: var(--red);   }
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(148px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; margin-bottom: 20px; }
+  .kpi { background: var(--surface); padding: 20px 18px; }
+  .kpi-label { font-size: 11px; color: var(--muted); letter-spacing: .03em; margin-bottom: 8px; }
+  .kpi-value { font-size: 24px; font-weight: 600; font-family: var(--mono); color: var(--text); line-height: 1; margin-bottom: 6px; }
+  .kpi-delta { font-size: 11px; display: flex; align-items: center; gap: 3px; }
+  .up   { color: var(--green); }
+  .down { color: var(--red); }
+  .neu  { color: var(--faint); }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 20px; }
+  .card-title { font-size: 11px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--faint); margin-bottom: 16px; }
+  .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { font-size: 10px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--faint); text-align: left; padding: 0 0 10px; border-bottom: 1px solid var(--border); }
+  th.r, td.r { text-align: right; }
+  td { padding: 9px 0; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  .badge { display: inline-block; font-size: 10px; font-family: var(--mono); padding: 2px 7px; border-radius: 4px; font-weight: 500; }
+  .bv { background: var(--red-dim);   color: var(--red);   }
+  .bo { background: var(--green-dim); color: var(--green); }
+  .bi { background: var(--blue-dim);  color: var(--blue);  }
+  .bn { background: var(--surface2);  color: var(--muted); }
+  .alert { border-radius: var(--r-md); padding: 14px 16px; margin-bottom: 12px; border-left: 3px solid; }
+  .alert-title { font-size: 13px; font-weight: 500; margin-bottom: 5px; }
+  .alert p { font-size: 13px; color: var(--muted); line-height: 1.65; }
+  .a-ok   { background: var(--green-dim); border-color: var(--green); }
+  .a-ok   .alert-title { color: var(--green); }
+  .a-warn { background: var(--amber-dim); border-color: var(--amber); }
+  .a-warn .alert-title { color: var(--amber); }
+  .a-bad  { background: var(--red-dim);   border-color: var(--red);   }
+  .a-bad  .alert-title { color: var(--red); }
+  .a-info { background: var(--blue-dim);  border-color: var(--blue);  }
+  .a-info .alert-title { color: var(--blue); }
+  .cmp-row { display: flex; align-items: baseline; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .cmp-row:last-child { border-bottom: none; }
+  .cmp-label { flex: 1; color: var(--muted); }
+  .cmp-abr { width: 68px; text-align: right; font-family: var(--mono); font-size: 11px; color: var(--faint); }
+  .cmp-may { width: 68px; text-align: right; font-family: var(--mono); font-size: 12px; color: var(--text); }
+  .cmp-var { width: 52px; text-align: right; font-size: 11px; font-family: var(--mono); font-weight: 500; }
+  .aging-row { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; font-size: 12px; }
+  .aging-label { width: 72px; color: var(--muted); flex-shrink: 0; }
+  .aging-track { flex: 1; background: rgba(255,255,255,0.05); border-radius: 3px; height: 5px; overflow: hidden; }
+  .aging-fill  { height: 5px; border-radius: 3px; }
+  .aging-val   { width: 120px; display: flex; justify-content: flex-end; gap: 10px; font-family: var(--mono); font-size: 11px; color: var(--faint); flex-shrink: 0; }
+  .eg-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px,1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; margin-bottom: 12px; }
+  .eg { background: var(--surface); padding: 16px; }
+  .eg-label { font-size: 11px; color: var(--muted); margin-bottom: 5px; }
+  .eg-val { font-size: 16px; font-weight: 500; font-family: var(--mono); color: var(--text); }
+  .cash-line { display: flex; justify-content: space-between; align-items: baseline; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .cash-line:last-child { border-bottom: none; }
+  .cash-line .cl { color: var(--muted); }
+  .cash-line .cv { font-family: var(--mono); font-weight: 500; }
+  .chart-wrap { position: relative; width: 100%; }
+  .action { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 16px 18px; }
+  .action-prio { font-size: 10px; font-family: var(--mono); font-weight: 600; letter-spacing: .06em; margin-bottom: 8px; }
+  .action h4 { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+  .action p { font-size: 12px; color: var(--muted); line-height: 1.6; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+  footer { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--border); font-size: 11px; color: var(--faint); font-family: var(--mono); display: flex; justify-content: space-between; }
+  .note { font-size: 11px; color: var(--faint); margin-top: 10px; font-style: italic; }
+  @media(max-width:620px){ .g2,.g3{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <h1>Pinturería Adrián</h1>
+    <p>Informe ejecutivo mensual · Ramona, Santa Fe</p>
+  </div>
+  <div class="header-badge">Mayo 2026</div>
+</header>
+
+<section class="section">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <span class="section-title">Resumen ejecutivo</span>
+    <span class="section-flag flag-ok">Mes positivo</span>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="kpi-label">Ventas del mes</div>
+      <div class="kpi-value">$16.2M</div>
+      <div class="kpi-delta up">↑ +208% vs abril</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Cobros del mes</div>
+      <div class="kpi-value">$19.4M</div>
+      <div class="kpi-delta up">↑ +425% vs abril</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Ratio cobros/ventas</div>
+      <div class="kpi-value">1.20</div>
+      <div class="kpi-delta up">↑ desde 0.70 en abril</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Ticket promedio</div>
+      <div class="kpi-value">$253K</div>
+      <div class="kpi-delta up">↑ +216% vs $80K abril</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">CxC giro normal</div>
+      <div class="kpi-value">$10.0M</div>
+      <div class="kpi-delta up">↓ −38% vs abril</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Deuda +90 días</div>
+      <div class="kpi-value">34.1%</div>
+      <div class="kpi-delta up">↓ mejora desde 55.7%</div>
+    </div>
+  </div>
+
+  <div class="alert a-ok">
+    <div class="alert-title">Mayo fue el mejor mes del año</div>
+    <p>Las ventas netas (sin Ariel, que fue pago en mercadería) alcanzaron $16.2M, más del doble de abril. Con 64 facturas el ticket promedio fue de $253K. La cobranza superó las ventas por primera vez, con ratio 1.20, confirmando recupero de deuda anterior. La cartera del giro normal cayó $6.2M. Todos los frentes cerraron positivos.</p>
+  </div>
+
+  <div class="alert a-warn">
+    <div class="alert-title">Punto a monitorear: pagos a proveedores</div>
+    <p>El pago a proveedores saltó de $733K en abril a $4.94M en mayo (+574%). Es consistente con el volumen del mes, pero hay que vigilar que no genere concentración de deuda nueva con Pinturería Ariel en los próximos vencimientos.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <span class="section-title">Comparativo abril vs mayo</span>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">Indicadores principales</div>
+      <div class="cmp-row"><span class="cmp-label">Ventas netas</span><span class="cmp-abr">$5.26M</span><span class="cmp-may">$16.22M</span><span class="cmp-var up">+208%</span></div>
+      <div class="cmp-row"><span class="cmp-label">Facturas emitidas</span><span class="cmp-abr">66</span><span class="cmp-may">64</span><span class="cmp-var down">−3%</span></div>
+      <div class="cmp-row"><span class="cmp-label">Ticket promedio</span><span class="cmp-abr">$80K</span><span class="cmp-may">$253K</span><span class="cmp-var up">+216%</span></div>
+      <div class="cmp-row"><span class="cmp-label">Cobros</span><span class="cmp-abr">$3.70M</span><span class="cmp-may">$19.45M</span><span class="cmp-var up">+425%</span></div>
+      <div class="cmp-row"><span class="cmp-label">Ratio cobros/ventas</span><span class="cmp-abr">0.70</span><span class="cmp-may">1.20</span><span class="cmp-var up">+71%</span></div>
+      <div class="cmp-row"><span class="cmp-label">Pagos proveedores</span><span class="cmp-abr">$733K</span><span class="cmp-may">$4.94M</span><span class="cmp-var down">+574%</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Cartera y pasivos</div>
+      <div class="cmp-row"><span class="cmp-label">CxC giro normal</span><span class="cmp-abr">$16.22M</span><span class="cmp-may">$10.03M</span><span class="cmp-var up">−38%</span></div>
+      <div class="cmp-row"><span class="cmp-label">CxP giro normal</span><span class="cmp-abr">$17.73M</span><span class="cmp-may">$4.53M</span><span class="cmp-var up">−74%</span></div>
+      <div class="cmp-row"><span class="cmp-label">% CxC +90 días</span><span class="cmp-abr">55.7%</span><span class="cmp-may">34.1%</span><span class="cmp-var up">−21pp</span></div>
+      <div class="cmp-row"><span class="cmp-label">CxC a vencer</span><span class="cmp-abr">$5.61M</span><span class="cmp-may">$5.07M</span><span class="cmp-var neu">−10%</span></div>
+      <div class="cmp-row"><span class="cmp-label">CxC 0–30 días</span><span class="cmp-abr">$397K</span><span class="cmp-may">$1.20M</span><span class="cmp-var up">+204%</span></div>
+      <div class="cmp-row"><span class="cmp-label">CxC +90 días</span><span class="cmp-abr">$5.98M</span><span class="cmp-may">$3.42M</span><span class="cmp-var up">−43%</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Ventas vs cobros — evolución</div>
+    <div style="display:flex;gap:16px;margin-bottom:10px;font-size:11px;color:var(--muted)">
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:9px;height:9px;border-radius:2px;background:#3b82f6;display:inline-block"></span>Ventas (sin Ariel)</span>
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:9px;height:9px;border-radius:2px;background:#22c55e;display:inline-block"></span>Cobros (sin Garay)</span>
+    </div>
+    <div class="chart-wrap" style="height:180px">
+      <canvas id="chartEvol"></canvas>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <span class="section-title">Ventas del mes</span>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">Top 5 clientes</div>
+      <table>
+        <thead><tr><th>Cliente</th><th class="r">Importe</th><th class="r">Part.</th></tr></thead>
+        <tbody>
+          <tr><td>C.C.y Dep. Ramona</td><td class="r">$1.08M</td><td class="r" style="color:var(--muted);font-family:var(--mono);font-size:11px">6.7%</td></tr>
+          <tr><td>Antonioz Ariel</td><td class="r">$759K</td><td class="r" style="color:var(--muted);font-family:var(--mono);font-size:11px">4.7%</td></tr>
+          <tr><td>Salusso Horacio</td><td class="r">$741K</td><td class="r" style="color:var(--muted);font-family:var(--mono);font-size:11px">4.6%</td></tr>
+          <tr><td>Martino Jorge</td><td class="r">$696K</td><td class="r" style="color:var(--muted);font-family:var(--mono);font-size:11px">4.3%</td></tr>
+          <tr><td>Caglieris Nelly</td><td class="r">$600K</td><td class="r" style="color:var(--muted);font-family:var(--mono);font-size:11px">3.7%</td></tr>
+        </tbody>
+      </table>
+      <p class="note">En abril el top 5 concentraba 56.5%. En mayo bajó a 24.0% con el mismo volumen de facturas — la base de clientes se amplió.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Ventas diarias</div>
+      <div class="chart-wrap" style="height:185px">
+        <canvas id="chartVentas"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert a-info">
+    <div class="alert-title">El pico del 12/5 concentró $3.57M — 22% del mes en un solo día</div>
+    <p>La venta del 12 de mayo fue excepcionalmente alta. Vale la pena identificar si fue un pedido institucional grande o una coincidencia de entregas para entender si es replicable. El resto del mes tuvo un ritmo más distribuido entre $35K y $933K diarios.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <span class="section-title">Cobranzas y CxC</span>
+    <span class="section-flag flag-ok">Mejora significativa</span>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">Top cobros giro normal al 30/5</div>
+      <table>
+        <thead><tr><th>Cliente</th><th class="r">Importe</th></tr></thead>
+        <tbody>
+          <tr><td>Martino Jorge</td><td class="r">$1.12M</td></tr>
+          <tr><td>Comuna de Ramona</td><td class="r">$1.03M</td></tr>
+          <tr><td>Antonioz Ariel</td><td class="r">$824K</td></tr>
+          <tr><td>Salusso Horacio</td><td class="r">$741K</td></tr>
+          <tr><td>Rivero Cristian</td><td class="r">$200K</td></tr>
+        </tbody>
+      </table>
+      <p class="note">Sin Garay Enrique — situación especial fuera del giro normal.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Aging CxC — giro normal al 30/5</div>
+      <div style="margin-top:4px">
+        <div class="aging-row">
+          <span class="aging-label">A vencer</span>
+          <div class="aging-track"><div class="aging-fill" style="width:50.6%;background:#22c55e"></div></div>
+          <div class="aging-val"><span>$5.07M</span><span>50.6%</span></div>
+        </div>
+        <div class="aging-row">
+          <span class="aging-label">0–30 días</span>
+          <div class="aging-track"><div class="aging-fill" style="width:12%;background:#3b82f6"></div></div>
+          <div class="aging-val"><span>$1.20M</span><span>12.0%</span></div>
+        </div>
+        <div class="aging-row">
+          <span class="aging-label">31–60 días</span>
+          <div class="aging-track"><div class="aging-fill" style="width:15.1%;background:#f59e0b"></div></div>
+          <div class="aging-val"><span>$1.52M</span><span>15.1%</span></div>
+        </div>
+        <div class="aging-row">
+          <span class="aging-label">61–90 días</span>
+          <div class="aging-track"><div class="aging-fill" style="width:2.9%;background:#f97316"></div></div>
+          <div class="aging-val"><span>$296K</span><span>2.9%</span></div>
+        </div>
+        <div class="aging-row">
+          <span class="aging-label">+90 días</span>
+          <div class="aging-track"><div class="aging-fill" style="width:34.1%;background:#ef4444"></div></div>
+          <div class="aging-val"><span>$3.42M</span><span>34.1%</span></div>
+        </div>
+      </div>
+      <p class="note">Excluye Garay Adrián y Cuenca Nelson — situaciones fuera del giro normal.</p>
+    </div>
+  </div>
+
+  <div class="alert a-ok">
+    <div class="alert-title">La cartera mejoró 21 puntos porcentuales en un mes</div>
+    <p>El porcentaje de deuda +90 días bajó de 55.7% a 34.1%. La cartera total del giro normal cayó $6.2M. El ratio cobros/ventas de 1.20 confirma que mayo fue un mes activo no solo en ventas sino también en recupero. La tendencia es positiva y hay que sostenerla en junio.</p>
+  </div>
+
+  <div class="alert a-warn">
+    <div class="alert-title">Clientes a gestionar en junio</div>
+    <p>C.C.y Dep. Ramona ($1.16M), Ramallo Martín ($642K), Franco Elba ($378K) y Rivero Cristian ($293K) tienen saldos vencidos que requieren seguimiento activo. En total suman $2.51M en mora dentro del giro normal.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <span class="section-title">Egresos y flujo de caja</span>
+  </div>
+
+  <div class="eg-grid">
+    <div class="eg"><div class="eg-label">Compras / proveedores</div><div class="eg-val">$4.94M</div></div>
+    <div class="eg"><div class="eg-label">Alquiler depósito</div><div class="eg-val">$4.26M</div></div>
+    <div class="eg"><div class="eg-label">Sueldos</div><div class="eg-val">$1.00M</div></div>
+    <div class="eg"><div class="eg-label">Fletes</div><div class="eg-val">$50K</div></div>
+    <div class="eg"><div class="eg-label">Descuentos cedidos</div><div class="eg-val">$10K</div></div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">Balance de caja</div>
+      <div class="chart-wrap" style="height:190px">
+        <canvas id="chartCaja"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Resumen de caja</div>
+      <div class="cash-line"><span class="cl">Cobrado en el mes</span><span class="cv up">+$19.45M</span></div>
+      <div class="cash-line"><span class="cl">Egresos operativos</span><span class="cv down">−$10.26M</span></div>
+      <div class="cash-line"><span class="cl">Retiros socios</span><span class="cv down">−$3.50M</span></div>
+      <hr style="margin:4px 0">
+      <div class="cash-line"><span class="cl" style="font-weight:500;color:var(--text)">Saldo neto estimado</span><span class="cv up" style="font-size:16px">$5.68M</span></div>
+      <p class="note">Antes de impuestos y gastos no imputados en el período.</p>
+      <hr style="margin:12px 0">
+      <div class="card-title">Retiros de socios</div>
+      <div class="cash-line"><span class="cl">Martín</span><span class="cv">$3.30M</span></div>
+      <div class="cash-line"><span class="cl">Adrián</span><span class="cv">$200K</span></div>
+    </div>
+  </div>
+
+  <div class="alert a-warn">
+    <div class="alert-title">El alquiler del depósito es el egreso estructural más pesado</div>
+    <p>Con $4.26M representó el 26.2% de las ventas de mayo. En abril, con $5.26M de ventas, esa misma carga hubiera representado el 81%. En meses de menor volumen el alquiler comprime fuertemente el resultado. Vale la pena tenerlo como referencia al proyectar meses más chicos.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <span class="section-title">Cuentas por pagar — giro normal</span>
+    <span class="section-flag flag-ok">−74% vs abril</span>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">Saldo por proveedor al 30/5</div>
+      <table>
+        <thead><tr><th>Proveedor</th><th class="r">Saldo</th></tr></thead>
+        <tbody>
+          <tr><td>Pinturería Ariel</td><td class="r" style="font-family:var(--mono);font-size:12px">$4.45M</td></tr>
+          <tr><td>Roberto Boetto</td><td class="r" style="font-family:var(--mono);font-size:12px">$80K</td></tr>
+          <tr><td style="font-weight:500">Total giro normal</td><td class="r" style="font-family:var(--mono);font-size:13px;font-weight:500">$4.53M</td></tr>
+        </tbody>
+      </table>
+      <p class="note">Excluye Vulcano — situación fuera del giro normal.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Evolución CxP</div>
+      <div class="cmp-row"><span class="cmp-label">CxP abril (giro normal)</span><span class="cmp-may">$17.73M</span></div>
+      <div class="cmp-row"><span class="cmp-label">CxP mayo (giro normal)</span><span class="cmp-may">$4.53M</span></div>
+      <div class="cmp-row"><span class="cmp-label">Variación</span><span class="cmp-var up" style="width:auto;font-size:13px">−74% ↓</span></div>
+      <p class="note" style="margin-top:14px">La normalización del pasivo con proveedores es uno de los resultados más sólidos del mes. Reduce la presión financiera sobre los próximos vencimientos.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <span class="section-title">Plan de acción — junio</span>
+  </div>
+
+  <div class="g3">
+    <div class="action">
+      <div class="action-prio" style="color:var(--red)">PRIORIDAD ALTA</div>
+      <h4>Gestionar $2.51M vencidos</h4>
+      <p>C.C.y Dep. Ramona, Ramallo Martín, Franco Elba y Rivero Cristian concentran toda la mora activa del giro normal. Contacto directo en la primera semana de junio.</p>
+    </div>
+    <div class="action">
+      <div class="action-prio" style="color:var(--amber)">MONITOREAR</div>
+      <h4>Relación alquiler / ventas</h4>
+      <p>En meses de bajo volumen el alquiler del depósito pesa fuerte. Tener presente para proyectar meses de invierno y no sorprenderse con el resultado.</p>
+    </div>
+    <div class="action">
+      <div class="action-prio" style="color:var(--green)">MANTENER</div>
+      <h4>Ritmo de cobros activo</h4>
+      <p>Si junio vuelve a cobrar por encima de lo que vende, el CxC +90 días puede bajar otros 8–10 puntos. El objetivo para fin de junio: CxC +90 días por debajo del 25%.</p>
+    </div>
+  </div>
+
+  <div class="alert a-ok" style="margin-top:12px">
+    <div class="alert-title">Mayo fue un punto de inflexión</div>
+    <p>Por primera vez en el año la cobranza superó las ventas, el pasivo con proveedores se redujo un 74% y la cartera vencida bajó 21 puntos porcentuales. Si bien estos números reflejan en parte movimientos puntuales de alto monto, el impacto en la salud financiera del negocio es real. La dirección es la correcta — el desafío de junio es sostenerla.</p>
+  </div>
+</section>
+
+<footer>
+  <span>Pinturería Adrián · Informe ejecutivo mayo 2026</span>
+  <span>Fuente: Infocor · cierre 30/05/2026 · Análisis giro normal</span>
+</footer>
+
+<script>
+const dark = '#09090b';
+const surface = '#18181b';
+const border = 'rgba(255,255,255,0.08)';
+const muted = '#71717a';
+const tickC = '#52525b';
+const gridC = 'rgba(255,255,255,0.05)';
+const fmtM = v => '$' + (v/1000000).toFixed(2) + 'M';
+const fmtK = v => '$' + Math.round(v/1000) + 'K';
+Chart.defaults.color = muted;
+Chart.defaults.font.family = "'DM Mono', monospace";
+Chart.defaults.font.size = 11;
+
+new Chart(document.getElementById('chartEvol'), {
+  type: 'bar',
+  data: {
+    labels: ['Abril 2026', 'Mayo 2026'],
+    datasets: [
+      { label: 'Ventas', data: [5263337, 16220613], backgroundColor: '#3b82f6', borderRadius: 4, borderSkipped: false },
+      { label: 'Cobros', data: [3702871, 19447832], backgroundColor: '#22c55e', borderRadius: 4, borderSkipped: false }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + fmtM(ctx.raw) }, backgroundColor: surface, borderColor: border, borderWidth: 1, titleColor: '#fafafa', bodyColor: muted } },
+    scales: {
+      x: { ticks: { color: tickC }, grid: { display: false }, border: { display: false } },
+      y: { ticks: { color: tickC, callback: fmtM }, grid: { color: gridC }, border: { display: false } }
+    }
+  }
+});
+
+new Chart(document.getElementById('chartVentas'), {
+  type: 'bar',
+  data: {
+    labels: ['2/5','4/5','5/5','6/5','8/5','12/5','13/5','14/5','15/5','18/5','19/5','20/5','21/5','22/5','26/5','27/5','29/5','30/5'],
+    datasets: [{ label: 'Ventas', data: [198555,34832,222645,32692,2512,3568303,120001,553650,1081561,199251,932657,71669,14805,216937,158657,373621,712683,69590], backgroundColor: '#3b82f6', borderRadius: 3, borderSkipped: false }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => fmtK(ctx.raw) }, backgroundColor: surface, borderColor: border, borderWidth: 1, titleColor: '#fafafa', bodyColor: muted } },
+    scales: {
+      x: { ticks: { color: tickC, maxRotation: 45, autoSkip: false, font: { size: 9 } }, grid: { display: false }, border: { display: false } },
+      y: { ticks: { color: tickC, callback: fmtK, font: { size: 9 } }, grid: { color: gridC }, border: { display: false } }
+    }
+  }
+});
+
+new Chart(document.getElementById('chartCaja'), {
+  type: 'bar',
+  data: {
+    labels: ['Cobrado', 'Egresos oper.', 'Retiros socios', 'Saldo neto'],
+    datasets: [{ label: '$', data: [19447832, 10262964, 3503111, 5681757], backgroundColor: ['#22c55e','#ef4444','#f59e0b','#3b82f6'], borderRadius: 4, borderSkipped: false }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => fmtM(ctx.raw) }, backgroundColor: surface, borderColor: border, borderWidth: 1, titleColor: '#fafafa', bodyColor: muted } },
+    scales: {
+      x: { ticks: { color: tickC, font: { size: 10 } }, grid: { display: false }, border: { display: false } },
+      y: { ticks: { color: tickC, callback: fmtM, font: { size: 10 } }, grid: { color: gridC }, border: { display: false } }
+    }
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pinturería Adrián - Reporte Junio 2026</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        :root {
+            --bg: #09090b;
+            --surface: #111113;
+            --border: #2a2a2e;
+            --text: #f0f0f0;
+            --text-secondary: #a0a0a8;
+            --green: #10b981;
+            --red: #ef4444;
+            --blue: #3b82f6;
+            --amber: #f59e0b;
+            --purple: #8b5cf6;
+            --cyan: #06b6d4;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg); color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        header { border-bottom: 1px solid var(--border); padding-bottom: 2rem; margin-bottom: 2rem; }
+        h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+        .subtitle { color: var(--text-secondary); font-size: 1rem; }
+        .nav { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1.5rem; }
+        .nav a {
+            color: var(--text-secondary); text-decoration: none;
+            padding: 0.4rem 0.9rem; border: 1px solid var(--border);
+            border-radius: 0.4rem; font-size: 0.8rem; transition: all 0.2s;
+        }
+        .nav a:hover { color: var(--text); border-color: var(--blue); background: rgba(59, 130, 246, 0.1); }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.5rem; }
+        .kpi-label { color: var(--text-secondary); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+        .kpi-value { font-size: 1.875rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .kpi-change { font-size: 0.875rem; display: flex; align-items: center; gap: 0.25rem; }
+        .kpi-change.positive { color: var(--green); }
+        .kpi-change.negative { color: var(--red); }
+        .kpi-change.neutral { color: var(--text-secondary); }
+        .section { margin-bottom: 3rem; scroll-margin-top: 1rem; }
+        .section h2 { font-size: 1.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border); padding-bottom: 0.75rem; }
+        .section-intro { color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem; }
+        .ingreso-banner { background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(6, 182, 212, 0.1)); border: 1px solid var(--green); border-radius: 0.75rem; padding: 2rem; margin-bottom: 2rem; text-align: center; }
+        .ingreso-label { color: var(--text-secondary); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem; }
+        .ingreso-value { font-size: 3rem; font-weight: 700; color: var(--green); }
+        .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; }
+        @media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
+        .chart-box { background: var(--surface); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.5rem; }
+        .chart-box h3 { font-size: 1.125rem; margin-bottom: 1.5rem; }
+        .chart-wrapper { position: relative; height: 320px; }
+        .dist-item { display: flex; align-items: center; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid var(--border); }
+        .dist-item:last-child { border-bottom: none; }
+        .dist-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+        .dist-info { flex: 1; }
+        .dist-name { font-weight: 600; margin-bottom: 0.25rem; }
+        .dist-bar-bg { background: var(--bg); border-radius: 4px; height: 6px; overflow: hidden; }
+        .dist-bar-fill { height: 100%; border-radius: 4px; }
+        .dist-amount { text-align: right; flex-shrink: 0; }
+        .dist-value { font-weight: 600; font-family: "Courier New", monospace; }
+        .dist-pct { color: var(--text-secondary); font-size: 0.75rem; }
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.5rem; border-left: 4px solid; }
+        .summary-card.proveedores { border-left-color: var(--blue); }
+        .summary-card.sueldos { border-left-color: var(--amber); }
+        .summary-card.retiros { border-left-color: var(--purple); }
+        .summary-card.impuestos { border-left-color: var(--red); }
+        .summary-card.saldo { border-left-color: var(--green); }
+        .summary-label { color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+        .summary-value { font-size: 1.5rem; font-weight: 600; }
+        .table-container { background: var(--surface); border: 1px solid var(--border); border-radius: 0.5rem; overflow: hidden; margin-bottom: 2rem; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: var(--bg); padding: 1rem; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); }
+        td { padding: 0.875rem 1rem; border-bottom: 1px solid var(--border); }
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background: rgba(255, 255, 255, 0.02); }
+        .number { text-align: right; font-family: "Courier New", monospace; }
+        .row-total { background: var(--bg); font-weight: 700; }
+        .row-saldo { background: rgba(16, 185, 129, 0.1); font-weight: 700; color: var(--green); }
+        .row-danger { background: rgba(239, 68, 68, 0.08); }
+        .alert { background: rgba(239, 68, 68, 0.1); border-left: 4px solid var(--red); padding: 1rem; margin-bottom: 1.5rem; border-radius: 0.25rem; }
+        .alert-title { font-weight: 600; color: var(--red); margin-bottom: 0.25rem; }
+        .alert.warning { background: rgba(245, 158, 11, 0.1); border-left-color: var(--amber); }
+        .alert.warning .alert-title { color: var(--amber); }
+        .action-list { background: var(--surface); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.5rem; }
+        .action-item { padding: 0.75rem 0; border-bottom: 1px solid var(--border); display: flex; gap: 1rem; }
+        .action-item:last-child { border-bottom: none; }
+        .action-number { background: var(--blue); color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0; }
+        .action-content { flex: 1; }
+        .action-title { font-weight: 600; margin-bottom: 0.25rem; }
+        .action-desc { color: var(--text-secondary); font-size: 0.875rem; }
+        .badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 0.25rem; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+        .badge.positive { background: rgba(16, 185, 129, 0.2); color: var(--green); }
+        .badge.negative { background: rgba(239, 68, 68, 0.2); color: var(--red); }
+        .badge.neutral { background: rgba(160, 160, 168, 0.2); color: var(--text-secondary); }
+        /* Comparación plazos */
+        .plazo-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; }
+        @media (max-width: 900px) { .plazo-compare { grid-template-columns: 1fr; } }
+        .plazo-card { background: var(--surface); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.5rem; }
+        .plazo-card.cobro { border-top: 4px solid var(--red); }
+        .plazo-card.pago { border-top: 4px solid var(--blue); }
+        .plazo-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .plazo-title { font-size: 1.125rem; font-weight: 600; }
+        .plazo-dias { font-size: 2.5rem; font-weight: 700; margin: 0.5rem 0; }
+        .plazo-card.cobro .plazo-dias { color: var(--red); }
+        .plazo-card.pago .plazo-dias { color: var(--blue); }
+        .plazo-desc { color: var(--text-secondary); font-size: 0.875rem; }
+        .brecha-banner { background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(245, 158, 11, 0.1)); border: 1px solid var(--red); border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 2rem; text-align: center; }
+        .brecha-value { font-size: 2.5rem; font-weight: 700; color: var(--red); margin: 0.5rem 0; }
+        .brecha-label { color: var(--text-secondary); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        footer { border-top: 1px solid var(--border); padding-top: 1.5rem; margin-top: 3rem; color: var(--text-secondary); font-size: 0.875rem; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Pinturería Adrián</h1>
+            <p class="subtitle">Reporte Ejecutivo — Junio 2026</p>
+            <nav class="nav">
+                <a href="#resumen">Resumen</a>
+                <a href="#comparativo">Comparativo</a>
+                <a href="#flujo">Flujo de Caja</a>
+                <a href="#plazos">Plazos Cobro vs Pago</a>
+                <a href="#compromiso">Compromiso CxP</a>
+                <a href="#ventas">Ventas</a>
+                <a href="#cobranzas">Cobranzas</a>
+                <a href="#plan">Plan de Acción</a>
+            </nav>
+        </header>
+
+        <!-- RESUMEN -->
+        <section class="kpi-grid" id="resumen">
+            <div class="kpi-card">
+                <div class="kpi-label">Ventas Netas</div>
+                <div class="kpi-value">$38.45M</div>
+                <div class="kpi-change positive">↑ +137.1% vs mayo</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Ingreso en Caja</div>
+                <div class="kpi-value">$5.63M</div>
+                <div class="kpi-change neutral">Cobros efectivos del mes</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">CxC Total</div>
+                <div class="kpi-value">$11.20M</div>
+                <div class="kpi-change negative">↑ +11.6% vs mayo</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">CxP Total</div>
+                <div class="kpi-value">$9.22M</div>
+                <div class="kpi-change negative">Compromiso proveedores</div>
+            </div>
+        </section>
+
+        <!-- COMPARATIVO -->
+        <section class="section" id="comparativo">
+            <h2>Comparativo Junio vs Mayo</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Indicador</th>
+                            <th class="number">Mayo</th>
+                            <th class="number">Junio</th>
+                            <th class="number">Variación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><strong>Ventas Netas</strong></td><td class="number">$16,220,613</td><td class="number">$38,451,546</td><td class="number"><span class="badge positive">+137.1%</span></td></tr>
+                        <tr><td><strong>Facturas</strong></td><td class="number">64</td><td class="number">43</td><td class="number"><span class="badge negative">-32.8%</span></td></tr>
+                        <tr><td><strong>Ticket Promedio</strong></td><td class="number">$253,447</td><td class="number">$894,222</td><td class="number"><span class="badge positive">+254.9%</span></td></tr>
+                        <tr><td><strong>CxC Total</strong></td><td class="number">$10,029,964</td><td class="number">$11,195,667</td><td class="number"><span class="badge negative">+11.6%</span></td></tr>
+                        <tr><td><strong>CxP Total</strong></td><td class="number">$4,527,886</td><td class="number">$9,218,929</td><td class="number"><span class="badge negative">+103.6%</span></td></tr>
+                        <tr><td><strong>Deudores</strong></td><td class="number">72</td><td class="number">98</td><td class="number"><span class="badge negative">+36.1%</span></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- FLUJO DE CAJA -->
+        <section class="section" id="flujo">
+            <h2>Flujo de Caja — Distribución de Pagos</h2>
+
+            <div class="ingreso-banner">
+                <div class="ingreso-label">Total Ingresado en Caja</div>
+                <div class="ingreso-value">$5,634,020</div>
+            </div>
+
+            <div class="summary-grid">
+                <div class="summary-card proveedores"><div class="summary-label">Proveedores</div><div class="summary-value">$2,784,069</div></div>
+                <div class="summary-card sueldos"><div class="summary-label">Sueldos</div><div class="summary-value">$1,000,000</div></div>
+                <div class="summary-card retiros"><div class="summary-label">Retiros Socios</div><div class="summary-value">$511,467</div></div>
+                <div class="summary-card impuestos"><div class="summary-label">Impuestos + Fletes</div><div class="summary-value">$351,000</div></div>
+                <div class="summary-card saldo"><div class="summary-label">Saldo en Caja</div><div class="summary-value">$987,484</div></div>
+            </div>
+
+            <div class="main-grid">
+                <div class="chart-box">
+                    <h3>Distribución de Pagos</h3>
+                    <div class="chart-wrapper"><canvas id="pieChart"></canvas></div>
+                </div>
+                <div class="chart-box">
+                    <h3>Desglose Detallado</h3>
+                    <div class="dist-item">
+                        <div class="dist-dot" style="background: var(--blue);"></div>
+                        <div class="dist-info"><div class="dist-name">Proveedores (Acreedores)</div><div class="dist-bar-bg"><div class="dist-bar-fill" style="background: var(--blue); width: 49.4%;"></div></div></div>
+                        <div class="dist-amount"><div class="dist-value">$2,784,069</div><div class="dist-pct">49.4%</div></div>
+                    </div>
+                    <div class="dist-item">
+                        <div class="dist-dot" style="background: var(--amber);"></div>
+                        <div class="dist-info"><div class="dist-name">Sueldos y Jornales</div><div class="dist-bar-bg"><div class="dist-bar-fill" style="background: var(--amber); width: 17.7%;"></div></div></div>
+                        <div class="dist-amount"><div class="dist-value">$1,000,000</div><div class="dist-pct">17.7%</div></div>
+                    </div>
+                    <div class="dist-item">
+                        <div class="dist-dot" style="background: var(--purple);"></div>
+                        <div class="dist-info"><div class="dist-name">Retiro Adrián</div><div class="dist-bar-bg"><div class="dist-bar-fill" style="background: var(--purple); width: 8.9%;"></div></div></div>
+                        <div class="dist-amount"><div class="dist-value">$499,850</div><div class="dist-pct">8.9%</div></div>
+                    </div>
+                    <div class="dist-item">
+                        <div class="dist-dot" style="background: var(--red);"></div>
+                        <div class="dist-info"><div class="dist-name">Impuestos Nacionales</div><div class="dist-bar-bg"><div class="dist-bar-fill" style="background: var(--red); width: 5.3%;"></div></div></div>
+                        <div class="dist-amount"><div class="dist-value">$300,000</div><div class="dist-pct">5.3%</div></div>
+                    </div>
+                    <div class="dist-item">
+                        <div class="dist-dot" style="background: var(--cyan);"></div>
+                        <div class="dist-info"><div class="dist-name">Fletes por Compras</div><div class="dist-bar-bg"><div class="dist-bar-fill" style="background: var(--cyan); width: 0.9%;"></div></div></div>
+                        <div class="dist-amount"><div class="dist-value">$51,000</div><div class="dist-pct">0.9%</div></div>
+                    </div>
+                    <div class="dist-item">
+                        <div class="dist-dot" style="background: #a78bfa;"></div>
+                        <div class="dist-info"><div class="dist-name">Retiro Martín</div><div class="dist-bar-bg"><div class="dist-bar-fill" style="background: #a78bfa; width: 0.2%;"></div></div></div>
+                        <div class="dist-amount"><div class="dist-value">$11,617</div><div class="dist-pct">0.2%</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr><th>Concepto</th><th class="number">Monto</th><th class="number">% del Ingreso</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr style="background: rgba(16, 185, 129, 0.05);"><td><strong>↓ INGRESO — Caja Pesos</strong></td><td class="number"><strong>$5,634,020</strong></td><td class="number">100%</td></tr>
+                        <tr><td>Proveedores (Acreedores Varios)</td><td class="number">$2,784,069</td><td class="number">49.4%</td></tr>
+                        <tr><td>Sueldos y Jornales</td><td class="number">$1,000,000</td><td class="number">17.7%</td></tr>
+                        <tr><td>Retiro Adrián</td><td class="number">$499,850</td><td class="number">8.9%</td></tr>
+                        <tr><td>Impuestos Nacionales</td><td class="number">$300,000</td><td class="number">5.3%</td></tr>
+                        <tr><td>Fletes por Compras</td><td class="number">$51,000</td><td class="number">0.9%</td></tr>
+                        <tr><td>Retiro Martín</td><td class="number">$11,617</td><td class="number">0.2%</td></tr>
+                        <tr class="row-total"><td>TOTAL EGRESOS</td><td class="number">$4,646,536</td><td class="number">82.5%</td></tr>
+                        <tr class="row-saldo"><td>SALDO EN CAJA</td><td class="number">$987,484</td><td class="number">17.5%</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- PLAZOS COBRO VS PAGO -->
+        <section class="section" id="plazos">
+            <h2>Plazos: Cobramos vs Pagamos</h2>
+            <p class="section-intro">El corazón del problema de caja. Compramos y pagamos a proveedores con plazo fijo de 30 días, pero cobramos a los clientes "en cualquier momento". Esta asimetría obliga a financiar el capital de trabajo con recursos propios.</p>
+
+            <div class="plazo-compare">
+                <div class="plazo-card pago">
+                    <div class="plazo-header"><span class="plazo-title">Pagamos a proveedores</span></div>
+                    <div class="plazo-dias">26 días</div>
+                    <div class="plazo-desc">Atraso promedio de la CxP vencida. Las condiciones son <strong>30 días F.F.</strong> ($8.09M) y Cta.Cte. 30 días ($1.05M). Cumplimos razonablemente el plazo pactado.</div>
+                </div>
+                <div class="plazo-card cobro">
+                    <div class="plazo-header"><span class="plazo-title">Cobramos a clientes</span></div>
+                    <div class="plazo-dias">145 días</div>
+                    <div class="plazo-desc">Atraso promedio ponderado de la CxC vencida. Aunque vendemos a 30 días, en la práctica la cobranza se estira más de <strong>4 meses adicionales</strong> sobre el plazo pactado.</div>
+                </div>
+            </div>
+
+            <div class="brecha-banner">
+                <div class="brecha-label">Brecha de financiamiento</div>
+                <div class="brecha-value">~119 días</div>
+                <div class="plazo-desc">Pagamos con ~26 días de atraso pero cobramos con 145. Financiamos a los clientes casi 4 meses con capital propio, comprometiendo la capacidad de pago a proveedores.</div>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr><th>Condición de pago</th><th class="number">CxC (nos deben)</th><th class="number">CxP (debemos)</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Cta.Cte. 30 días</td><td class="number">$5,899,366</td><td class="number">$1,050,416</td></tr>
+                        <tr><td>Pago a 30 días F.F.</td><td class="number">$5,384,011</td><td class="number">$8,088,354</td></tr>
+                        <tr><td>Pago a 60 días F.F.</td><td class="number">$48,134</td><td class="number">$80,160</td></tr>
+                        <tr class="row-total"><td>TOTAL</td><td class="number">$11,195,667</td><td class="number">$9,218,929</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- COMPROMISO CxP -->
+        <section class="section" id="compromiso">
+            <h2>Cómo la Cobranza Compromete los Pagos</h2>
+            <p class="section-intro">La CxP creció +104% vs mayo (de $4.53M a $9.22M). Con solo $987K en caja, las obligaciones inmediatas superan ampliamente los recursos disponibles. La única salida es acelerar la cobranza de la CxC vencida.</p>
+
+            <div class="alert">
+                <div class="alert-title">⚠ Cobertura de caja: solo 10.7%</div>
+                <p>Las obligaciones inmediatas (CxP vencida + próximos 30 días) suman $9.22M. Con $987K en caja, cubrimos apenas el 10.7%. Brecha: <strong>$8.23M</strong>.</p>
+            </div>
+
+            <div class="main-grid">
+                <div class="chart-box">
+                    <h3>Aging CxP — Vencimientos a Pagar</h3>
+                    <div class="chart-wrapper"><canvas id="cxpChart"></canvas></div>
+                </div>
+                <div class="chart-box">
+                    <h3>Aging CxC — Vencimientos a Cobrar</h3>
+                    <div class="chart-wrapper"><canvas id="cxcChart"></canvas></div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr><th>Tramo</th><th class="number">CxP a Pagar</th><th class="number">%</th><th class="number">CxC a Cobrar</th><th class="number">%</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr class="row-danger"><td><strong>Vencido</strong></td><td class="number">$3,425,586</td><td class="number">37.2%</td><td class="number">$9,193,327</td><td class="number">83.6%</td></tr>
+                        <tr><td>A vencer 0-30 días</td><td class="number">$5,793,344</td><td class="number">62.8%</td><td class="number">$1,800,303</td><td class="number">16.4%</td></tr>
+                        <tr class="row-total"><td>TOTAL</td><td class="number">$9,218,929</td><td class="number">100%</td><td class="number">$10,993,631</td><td class="number">100%</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="alert warning">
+                <div class="alert-title">💡 La solución está en la CxC vencida</div>
+                <p>Hay <strong>$9.19M de CxC vencida</strong> (83.6% de la cartera). Si se cobrara, cubriría el <strong>100%</strong> de las obligaciones inmediatas con proveedores ($9.22M). El problema no es de rentabilidad ni de márgenes — es puramente de <strong>timing de cobranza</strong>.</p>
+            </div>
+        </section>
+
+        <!-- VENTAS -->
+        <section class="section" id="ventas">
+            <h2>Análisis de Ventas</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr><th>#</th><th>Cliente</th><th class="number">Monto</th><th class="number">% del Total</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td><strong>MUTUAL REGIONAL CCYD RAMONA - OBRA SUNCHALES</strong></td><td class="number">$12,164,870</td><td class="number">31.6%</td></tr>
+                        <tr><td>2</td><td><strong>BONETTI MARCELO</strong></td><td class="number">$1,221,219</td><td class="number">3.2%</td></tr>
+                        <tr><td>3</td><td><strong>MUTUAL REGIONAL CCYD RAMONA</strong></td><td class="number">$1,047,786</td><td class="number">2.7%</td></tr>
+                        <tr><td>4</td><td><strong>TESIO ADRIAN</strong></td><td class="number">$864,059</td><td class="number">2.2%</td></tr>
+                        <tr><td>5</td><td><strong>COSTA SANTIAGO</strong></td><td class="number">$626,970</td><td class="number">1.6%</td></tr>
+                        <tr style="background: rgba(255, 255, 255, 0.02);"><td colspan="2"><strong>Otros (38 clientes)</strong></td><td class="number"><strong>$21,526,642</strong></td><td class="number"><strong>56.0%</strong></td></tr>
+                        <tr class="row-total"><td colspan="2">TOTAL</td><td class="number">$38,451,546</td><td class="number">100%</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="alert warning">
+                <div class="alert-title">Concentración alta en Mutual Ramona</div>
+                <p>Las dos operaciones de Mutual Regional CCYD Ramona suman $13.21M (34.3% de las ventas del mes). Verificar plazos de cobro y regularidad de estos proyectos.</p>
+            </div>
+        </section>
+
+        <!-- COBRANZAS / CxC -->
+        <section class="section" id="cobranzas">
+            <h2>Cuentas por Cobrar - Top Deudores</h2>
+            
+            <div class="alert">
+                <div class="alert-title">⚠ 83.6% de la cartera está vencida</div>
+                <p>De $11.20M de CxC, $9.19M ya venció. Además se agregaron 26 deudores nuevos respecto a mayo (+36%).</p>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr><th>#</th><th>Cliente</th><th class="number">Saldo</th><th class="number">% CxC</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td><strong>LONGONI CARLOS</strong></td><td class="number">$767,565</td><td class="number">6.9%</td></tr>
+                        <tr><td>2</td><td><strong>MONDINO NATALIA</strong></td><td class="number">$663,982</td><td class="number">5.9%</td></tr>
+                        <tr><td>3</td><td><strong>RAMALLO MARTIN</strong></td><td class="number">$641,639</td><td class="number">5.7%</td></tr>
+                        <tr><td>4</td><td><strong>CAGLIERIS NELLY</strong></td><td class="number">$600,000</td><td class="number">5.4%</td></tr>
+                        <tr><td>5</td><td><strong>BONETTI MARCELO</strong></td><td class="number">$529,333</td><td class="number">4.7%</td></tr>
+                        <tr><td>6</td><td><strong>OVENA JORGE</strong></td><td class="number">$497,279</td><td class="number">4.4%</td></tr>
+                        <tr><td>7</td><td><strong>PINTURERIA ARIEL</strong></td><td class="number">$458,625</td><td class="number">4.1%</td></tr>
+                        <tr><td>8</td><td><strong>C.C.Y DEP.RAMONA</strong></td><td class="number">$447,444</td><td class="number">4.0%</td></tr>
+                        <tr><td>9</td><td><strong>FASINO FRANCO</strong></td><td class="number">$393,155</td><td class="number">3.5%</td></tr>
+                        <tr><td>10</td><td><strong>BERTONI RUBEN</strong></td><td class="number">$329,076</td><td class="number">2.9%</td></tr>
+                        <tr style="background: rgba(255, 255, 255, 0.02);"><td colspan="2"><strong>Otros (88 deudores)</strong></td><td class="number"><strong>$5,867,569</strong></td><td class="number"><strong>52.4%</strong></td></tr>
+                        <tr class="row-total"><td colspan="2">TOTAL CxC</td><td class="number">$11,195,667</td><td class="number">100%</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- PLAN DE ACCIÓN -->
+        <section class="section" id="plan">
+            <h2>Plan de Acción — Julio 2026</h2>
+            <div class="action-list">
+                <div class="action-item">
+                    <div class="action-number">1</div>
+                    <div class="action-content">
+                        <div class="action-title">Cobrar la CxC vencida ($9.19M) — máxima prioridad</div>
+                        <div class="action-desc">Es la única fuente que cubre las obligaciones con proveedores. Foco en +90 días ($3.56M) y 61-90 días ($1.32M). Contacto directo, acuerdos de pago, y freno de crédito a los más atrasados.</div>
+                    </div>
+                </div>
+                <div class="action-item">
+                    <div class="action-number">2</div>
+                    <div class="action-content">
+                        <div class="action-title">Renegociar plazos con Pinturería Ariel</div>
+                        <div class="action-desc">Concentra $8.96M de la CxP (97%). Ante la brecha de cobranza, conviene negociar extensión de plazos o pagos escalonados mientras se normaliza la cartera de clientes.</div>
+                    </div>
+                </div>
+                <div class="action-item">
+                    <div class="action-number">3</div>
+                    <div class="action-content">
+                        <div class="action-title">Ajustar la política de crédito a clientes</div>
+                        <div class="action-desc">Vendemos a 30 días pero cobramos a 145. Endurecer condiciones: seña en obras grandes, límite de crédito por cliente, y suspensión de venta a cuenta a deudores +90 días.</div>
+                    </div>
+                </div>
+                <div class="action-item">
+                    <div class="action-number">4</div>
+                    <div class="action-content">
+                        <div class="action-title">Alinear plazo de compra con plazo de cobro real</div>
+                        <div class="action-desc">Mientras la cobranza tarde 145 días, comprar a 30 días fijos genera déficit estructural. Evaluar comprar menos volumen y más seguido, o negociar mayor plazo con proveedores.</div>
+                    </div>
+                </div>
+                <div class="action-item">
+                    <div class="action-number">5</div>
+                    <div class="action-content">
+                        <div class="action-title">Revisar retiros de socios ante la tensión de caja</div>
+                        <div class="action-desc">Con cobertura de caja del 10.7%, moderar retiros hasta normalizar la cobranza. En junio: Adrián $499,850 vs Martín $11,617.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <p>Reporte Ejecutivo - Pinturería Adrián | Junio 2026</p>
+            <p>Datos procesados al 30 de junio de 2026 | Fuente: Infocor GV6 + Subdiario CyB</p>
+        </footer>
+    </div>
+
+    <script>
+        const optsBase = {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { color: '#a0a0a8', padding: 12, font: { size: 11 } } },
+                tooltip: { callbacks: { label: function(c) {
+                    const v = c.parsed; const t = c.dataset.data.reduce((a,b)=>a+b,0);
+                    return ' $' + v.toLocaleString('es-AR') + ' (' + ((v/t)*100).toFixed(1) + '%)';
+                }}}
+            }
+        };
+
+        new Chart(document.getElementById('pieChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Proveedores', 'Sueldos', 'Retiro Adrián', 'Impuestos', 'Fletes', 'Retiro Martín'],
+                datasets: [{ data: [2784069, 1000000, 499850, 300000, 51000, 11617],
+                    backgroundColor: ['#3b82f6','#f59e0b','#8b5cf6','#ef4444','#06b6d4','#a78bfa'],
+                    borderColor: '#111113', borderWidth: 2 }]
+            },
+            options: optsBase
+        });
+
+        new Chart(document.getElementById('cxpChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Vencido', 'A vencer 0-30 días'],
+                datasets: [{ data: [3425586, 5793344],
+                    backgroundColor: ['#ef4444','#f59e0b'], borderColor: '#111113', borderWidth: 2 }]
+            },
+            options: optsBase
+        });
+
+        new Chart(document.getElementById('cxcChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['A vencer', 'Vencido 0-30d', 'Vencido 31-60d', 'Vencido 61-90d', 'Vencido +90d'],
+                datasets: [{ data: [1800303, 2643525, 1675708, 1315484, 3558611],
+                    backgroundColor: ['#10b981','#f59e0b','#f97316','#ef4444','#991b1b'], borderColor: '#111113', borderWidth: 2 }]
+            },
+            options: optsBase
+        });
+    </script>
+</body>
+</html>

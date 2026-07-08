@@ -28,38 +28,6 @@
   .btn-primary { background: #1e3a5f; color: white; }
   .btn-primary:hover { background: #152744; }
   .btn-success { background: #059669; color: white; }
-
-@'
-<!DOCTYPE html>
-<html lang="es-AR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tablero de Cobranzas — Pinturería Adrián</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f6f8; color: #1f2937; padding: 24px; line-height: 1.5; }
-  .container { max-width: 1500px; margin: 0 auto; }
-  header { background: #1e3a5f; color: white; padding: 20px 28px; border-radius: 12px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
-  header h1 { font-size: 22px; font-weight: 600; }
-  header .subtitle { font-size: 13px; opacity: 0.85; margin-top: 4px; }
-  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px; margin-bottom: 24px; }
-  .kpi { background: white; padding: 18px 22px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border-left: 4px solid #1e3a5f; }
-  .kpi.kpi-red { border-left-color: #dc2626; }
-  .kpi.kpi-yellow { border-left-color: #d97706; }
-  .kpi.kpi-green { border-left-color: #059669; }
-  .kpi.kpi-blue { border-left-color: #2563eb; }
-  .kpi.kpi-grey { border-left-color: #6b7280; }
-  .kpi-label { font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
-  .kpi-value { font-size: 22px; font-weight: 700; margin-top: 4px; color: #111827; }
-  .kpi-sub { font-size: 12px; color: #6b7280; margin-top: 2px; }
-  .toolbar { background: white; padding: 16px 20px; border-radius: 10px; margin-bottom: 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
-  .toolbar input, .toolbar select { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; font-family: inherit; }
-  .toolbar input[type="text"] { flex: 1; min-width: 200px; }
-  .btn { padding: 8px 16px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.15s; }
-  .btn-primary { background: #1e3a5f; color: white; }
-  .btn-primary:hover { background: #152744; }
-  .btn-success { background: #059669; color: white; }
   .btn-success:hover { background: #047857; }
   .btn-secondary { background: #e5e7eb; color: #374151; }
   .btn-secondary:hover { background: #d1d5db; }
@@ -96,6 +64,7 @@
   .modal-body { margin-bottom: 20px; }
   .modal textarea { width: 100%; min-height: 200px; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-family: inherit; font-size: 13.5px; resize: vertical; }
   .modal-actions { display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap; }
+  @media print { .toolbar, .btn, header { display: none; } }
 </style>
 </head>
 <body>
@@ -146,7 +115,16 @@
       <option value="cobrado">Cobrado</option>
       <option value="difiere">Difiere el Pago</option>
     </select>
+    <select id="filtroAntiguedad" onchange="render()">
+      <option value="">Toda antigüedad</option>
+      <option value="historico">Histórico (2023 o antes)</option>
+      <option value="2024">Desde 2024</option>
+      <option value="2025">Desde 2025</option>
+      <option value="2026">Solo 2026</option>
+    </select>
     <button class="btn btn-primary" onclick="agregarCliente()">+ Cliente</button>
+    <button class="btn btn-success" onclick="document.getElementById('fileInput').click()">Importar CSV</button>
+    <input type="file" id="fileInput" accept=".csv" style="display:none;" onchange="importarCSV(this.files[0])">
     <button class="btn btn-secondary" onclick="exportarCSV()">Exportar CSV</button>
     <button class="btn btn-secondary" onclick="if(confirm('Borrar todo?')) { localStorage.removeItem(STORAGE_KEY); location.reload(); }">Limpiar</button>
   </div>
@@ -304,6 +282,7 @@ function abrirWspDesdeModal() {
 function render() {
   const buscar = (document.getElementById('buscar').value || '').toLowerCase();
   const filtroEstado = document.getElementById('filtroEstado').value;
+  const filtroAnt = document.getElementById('filtroAntiguedad').value;
   const tbody = document.getElementById('tbody');
 
   let sinAct = 0, cont = 0, acu = 0, dif = 0, cob = 0;
@@ -330,7 +309,8 @@ function render() {
   const filtrados = clientes.filter(c => {
     const matchBuscar = !buscar || (c.nombre || '').toLowerCase().includes(buscar) || (c.nroCliente || '').toLowerCase().includes(buscar);
     const matchEst = !filtroEstado || c.estado === filtroEstado;
-    return matchBuscar && matchEst;
+    const matchAnt = !filtroAnt || c.antiguedad === filtroAnt;
+    return matchBuscar && matchEst && matchAnt;
   });
 
   if (filtrados.length === 0) {
@@ -348,6 +328,66 @@ function render() {
 function escapeHtml(str) {
   if (str === null || str === undefined) return '';
   return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function importarCSV(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const lines = e.target.result.split(/\r?\n/);
+      const nuevos = [];
+      let current = null;
+      for (const line of lines) {
+        const parts = line.split(';');
+        if (parts.length < 5) continue;
+        if (parts[0] === '' && parts[1] && !parts[2] && !parts[3] && parts[1] !== 'Total del Cliente' && !parts[1].startsWith('Total de todos')) {
+          const m = parts[1].trim().match(/^(\d+)\s+(.+)$/);
+          if (m) current = { nro: m[1], nombre: m[2].trim(), monto: 0 };
+        } else if (parts[1] === 'Total del Cliente' && current) {
+          const montoStr = (parts[3] || '').replace(/\./g, '').replace(',', '.');
+          current.monto = parseFloat(montoStr) || 0;
+          if (current.monto > 0) nuevos.push(current);
+          current = null;
+        }
+      }
+      if (nuevos.length > 0) mergearClientes(nuevos);
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  };
+  reader.readAsText(file, 'UTF-8');
+  document.getElementById('fileInput').value = '';
+}
+
+function mergearClientes(nuevos) {
+  const nuevosIdx = {};
+  nuevos.forEach(c => { nuevosIdx[c.nro] = c; });
+  const actualesIdx = {};
+  clientes.forEach(c => { if (c.nroCliente) actualesIdx[c.nroCliente] = c; });
+  
+  let actualizados = 0, agregados = 0, marcadosCobrados = 0;
+  nuevos.forEach(n => {
+    const existente = actualesIdx[n.nro];
+    if (existente) {
+      existente.monto = n.monto;
+      if (existente.estado === 'cobrado' && n.monto > 0) existente.estado = 'sin-activar';
+      actualizados++;
+    } else {
+      clientes.push({ id: Date.now() + Math.random(), nombre: n.nombre, nroCliente: n.nro, telefono: '', monto: n.monto, antiguedad: '2026', estado: 'sin-activar', notas: 'Nuevo del último import' });
+      agregados++;
+    }
+  });
+  
+  clientes.forEach(c => {
+    if (c.nroCliente && !nuevosIdx[c.nroCliente] && c.estado !== 'cobrado') {
+      c.estado = 'cobrado';
+      marcadosCobrados++;
+    }
+  });
+
+  guardar();
+  alert(`Importado: ${actualizados} actualizados, ${agregados} nuevos, ${marcadosCobrados} marcados como cobrados.`);
 }
 
 function exportarCSV() {

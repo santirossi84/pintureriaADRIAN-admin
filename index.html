@@ -59,7 +59,6 @@
             font-size: 0.95rem;
             font-weight: 400;
             transition: color 0.2s;
-            letter-spacing: -0.3px;
         }
         nav a:hover { color: var(--accent-2); }
         .hero {
@@ -132,7 +131,7 @@
         }
         .reports-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 2rem;
         }
         .report-card {
@@ -149,6 +148,7 @@
             box-shadow: 0 16px 40px rgba(0, 217, 255, 0.15);
             transform: translateY(-8px);
         }
+        .report-card.featured { border-color: var(--accent-2); }
         .report-header {
             background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
             padding: 2rem;
@@ -215,6 +215,10 @@
             background: rgba(16, 185, 129, 0.2);
             color: var(--success);
         }
+        .status-new {
+            background: rgba(0, 217, 255, 0.2);
+            color: var(--accent-2);
+        }
         .features {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -274,15 +278,15 @@
                 <p>Análisis financiero, flujo de caja y gestión de cobranzas en tiempo real</p>
                 <div class="hero-stats">
                     <div class="stat-card">
-                        <div class="stat-value">$38.45M</div>
-                        <div class="stat-label">Ventas Junio 2026</div>
+                        <div class="stat-value">$21.43M</div>
+                        <div class="stat-label">Ventas Julio 2026</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value">$11.20M</div>
+                        <div class="stat-value">$10.54M</div>
                         <div class="stat-label">CxC Pendiente</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value">$9.22M</div>
+                        <div class="stat-value">$4.95M</div>
                         <div class="stat-label">CxP Total</div>
                     </div>
                 </div>
@@ -292,16 +296,35 @@
             <div class="container">
                 <h2>Reportes Disponibles</h2>
                 <div class="reports-grid">
-                    <div class="report-card">
+                    <div class="report-card featured">
                         <div class="report-header">
                             <div class="report-icon">📊</div>
+                            <div>
+                                <div class="report-title">Julio 2026</div>
+                                <span class="report-status status-new">Nuevo</span>
+                            </div>
+                        </div>
+                        <div class="report-body">
+                            <p class="report-desc">Reporte con evolución trimestral, resultado del plan de cobranzas y análisis de retiros.</p>
+                            <div class="report-meta">
+                                <div class="meta-item"><span class="meta-label">Ventas</span><span class="meta-value">$21.43M</span></div>
+                                <div class="meta-item"><span class="meta-label">Cobros</span><span class="meta-value">$24.63M</span></div>
+                                <div class="meta-item"><span class="meta-label">Facturas</span><span class="meta-value">92</span></div>
+                                <div class="meta-item"><span class="meta-label">Deudores</span><span class="meta-value">89</span></div>
+                            </div>
+                            <a href="reportes/reporte_julio_2026.html" class="report-link">Ver Reporte →</a>
+                        </div>
+                    </div>
+                    <div class="report-card">
+                        <div class="report-header">
+                            <div class="report-icon">📈</div>
                             <div>
                                 <div class="report-title">Junio 2026</div>
                                 <span class="report-status">Activo</span>
                             </div>
                         </div>
                         <div class="report-body">
-                            <p class="report-desc">Reporte completo de junio con análisis de plazos, flujo de caja y compromiso de CxP.</p>
+                            <p class="report-desc">Análisis de plazos cobro vs pago, flujo de caja y compromiso de CxP.</p>
                             <div class="report-meta">
                                 <div class="meta-item"><span class="meta-label">Ventas</span><span class="meta-value">$38.45M</span></div>
                                 <div class="meta-item"><span class="meta-label">Ingreso Caja</span><span class="meta-value">$5.63M</span></div>
@@ -313,14 +336,14 @@
                     </div>
                     <div class="report-card">
                         <div class="report-header">
-                            <div class="report-icon">📈</div>
+                            <div class="report-icon">📉</div>
                             <div>
                                 <div class="report-title">Mayo 2026</div>
                                 <span class="report-status">Activo</span>
                             </div>
                         </div>
                         <div class="report-body">
-                            <p class="report-desc">Reporte ejecutivo de mayo con comparativo vs abril. Análisis de ventas y cobranzas.</p>
+                            <p class="report-desc">Reporte ejecutivo con comparativo vs abril. Análisis de ventas y cobranzas.</p>
                             <div class="report-meta">
                                 <div class="meta-item"><span class="meta-label">Ventas</span><span class="meta-value">$16.22M</span></div>
                                 <div class="meta-item"><span class="meta-label">Ingreso Caja</span><span class="meta-value">$19.45M</span></div>
@@ -339,11 +362,11 @@
                             </div>
                         </div>
                         <div class="report-body">
-                            <p class="report-desc">Dashboard interactivo de cobranzas con seguimiento de CxC vencida y proyecciones.</p>
+                            <p class="report-desc">Dashboard interactivo de cobranzas con seguimiento de CxC vencida y envío WhatsApp.</p>
                             <div class="report-meta">
-                                <div class="meta-item"><span class="meta-label">CxC Vencida</span><span class="meta-value">$9.19M</span></div>
-                                <div class="meta-item"><span class="meta-label">Aging +90d</span><span class="meta-value">$3.56M</span></div>
-                                <div class="meta-item"><span class="meta-label">Deudores</span><span class="meta-value">98</span></div>
+                                <div class="meta-item"><span class="meta-label">CxC Vencida</span><span class="meta-value">$5.44M</span></div>
+                                <div class="meta-item"><span class="meta-label">Aging +90d</span><span class="meta-value">$3.63M</span></div>
+                                <div class="meta-item"><span class="meta-label">Deudores</span><span class="meta-value">89</span></div>
                                 <div class="meta-item"><span class="meta-label">Prioridad</span><span class="meta-value">Alta</span></div>
                             </div>
                             <a href="reportes/tablero-cobranzas.html" class="report-link">Ver Tablero →</a>
@@ -373,18 +396,18 @@
                     </div>
                     <div class="feature">
                         <div class="feature-icon">📈</div>
-                        <h3>Comparativos</h3>
-                        <p>Análisis mes a mes para detectar tendencias</p>
+                        <h3>Evolución Trimestral</h3>
+                        <p>Comparativos mayo, junio y julio para detectar tendencias</p>
                     </div>
                     <div class="feature">
-                        <div class="feature-icon">🔒</div>
-                        <h3>Acceso Seguro</h3>
-                        <p>Datos alojados en Vercel con acceso controlado</p>
+                        <div class="feature-icon">💬</div>
+                        <h3>WhatsApp Masivo</h3>
+                        <p>Envío automatizado de mensajes de cobranza a deudores</p>
                     </div>
                     <div class="feature">
                         <div class="feature-icon">⚡</div>
                         <h3>Actualizaciones Rápidas</h3>
-                        <p>Nuevos reportes publicados automáticamente</p>
+                        <p>Nuevos reportes publicados automáticamente via Vercel</p>
                     </div>
                 </div>
             </div>
@@ -394,7 +417,7 @@
         <div class="container">
             <p><strong>Pinturería Adrián</strong> — Sistema de Reportes y Administración</p>
             <p>Ramona, Santa Fe — 2026</p>
-            <p style="margin-top: 1rem; color: var(--text-tertiary); font-size: 0.85rem;">Datos procesados desde Infocor GV6 | Última actualización: Julio 2026</p>
+            <p style="margin-top: 1rem; color: var(--text-tertiary); font-size: 0.85rem;">Datos procesados desde Infocor GV6 | Última actualización: Agosto 2026</p>
         </div>
     </footer>
 </body>

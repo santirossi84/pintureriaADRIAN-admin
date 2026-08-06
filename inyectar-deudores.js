@@ -7,10 +7,9 @@ function pm(s) {
 }
 
 function inyectarDeudoresEnTablero() {
-  // Leer CSV de deudores
   const csvPath = "deudores_telefonos_final.csv";
   if (!fs.existsSync(csvPath)) {
-    console.error("❌ No se encontró: " + csvPath);
+    console.error("No se encontr: " + csvPath);
     process.exit(1);
   }
 
@@ -21,39 +20,36 @@ function inyectarDeudoresEnTablero() {
   for (let i = 1; i < lines.length; i++) {
     const cols = lines[i].split(";");
     if (cols.length >= 3) {
-      const nombre = cols[0].trim();
-      const telefono = cols[1].trim();
-      const monto = pm(cols[2]);
-      
       clientes.push({
         id: i,
-        nombre: nombre,
+        nombre: cols[0].trim(),
+        nroCliente: "",
         antiguedad: "2026",
-        telefono: telefono,
-        monto: monto,
-        estado: "Sin Activar",
-        notas: "",
-        diasAtraso: 0,
-        deudas: [{ vencimiento: "31/7/2026", monto: monto, detalle: "Deuda julio" }]
+        telefono: cols[1].trim(),
+        monto: pm(cols[2]),
+        estado: "sin-activar",
+        notas: ""
       });
     }
   }
 
-  console.log("✅ Deudores cargados: " + clientes.length);
+  console.log("Deudores cargados: " + clientes.length);
 
   // Inyectar en tablero
   const tableroPath = path.join("reportes", "tablero-cobranzas.html");
   let html = fs.readFileSync(tableroPath, "utf-8");
 
   const jsonStr = JSON.stringify(clientes, null, 2);
-  const regex = /const\s+CLIENTES_INICIALES\s*=\s*\[[\s\S]*?\];/;
+  const inyeccion = "const DEUDORES_INICIALES = " + jsonStr + ";\nlet clientes = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || DEUDORES_INICIALES || [];";
+  
+  const regex = /let clientes = JSON\.parse\(localStorage\.getItem\(STORAGE_KEY\) \|\| 'null'\) \|\| \[\];/;
 
   if (html.match(regex)) {
-    html = html.replace(regex, "const CLIENTES_INICIALES = " + jsonStr + ";");
+    html = html.replace(regex, inyeccion);
     fs.writeFileSync(tableroPath, html, "utf-8");
-    console.log("✅ Tablero actualizado con " + clientes.length + " deudores");
+    console.log("Tablero actualizado.");
   } else {
-    console.error("❌ No se encontró array CLIENTES_INICIALES en tablero");
+    console.error("No se encontr la lnea de clientes");
   }
 }
 

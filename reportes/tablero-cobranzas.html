@@ -182,7 +182,159 @@ const ANTIGUEDAD = {
   '2026':      { label: 'Solo 2026',       clase: 'ant-2026' }
 };
 
-let clientes = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || [];
+const DEUDORES_INICIALES = [
+  {
+    "id": 1,
+    "nombre": "ROSSI MARTIN",
+    "nroCliente": "",
+    "antiguedad": "2026",
+    "telefono": "5493492596439",
+    "monto": 48663266,
+    "estado": "sin-activar",
+    "notas": ""
+  },
+  {
+    "id": 2,
+    "nombre": "PORPORATO RENE",
+    "nroCliente": "",
+    "antiguedad": "2026",
+    "telefono": "5493492583713",
+    "monto": 25950116,
+    "estado": "sin-activar",
+    "notas": ""
+  },
+  {
+    "id": 3,
+    "nombre": "OVENA JORGE",
+    "nroCliente": "",
+    "antiguedad": "2026",
+    "telefono": "5493492627721",
+    "monto": 24727888,
+    "estado": "sin-activar",
+    "notas": ""
+  },
+  {
+    "id": 4,
+    "nombre": "FAULKNER NAZARENO",
+    "nroCliente": "",
+    "antiguedad": "2026",
+    "telefono": "5493492623806",
+    "monto": 20170385,
+    "estado": "sin-activar",
+    "notas": ""
+  },
+  {
+    "id": 5,
+    "nombre": "CORAGLIA ARIEL",
+    "nroCliente": "",
+    "antiguedad": "2026",
+    "telefono": "5493492626975",
+    "monto": 18279047,
+    "estado": "sin-activar",
+    "notas": ""
+  },
+  {
+    "id": 6,
+    "nombre": "PICATTO MARIO",
+    "nroCliente": "",
+    "antiguedad": "2026",
+    "telefono": "5493492596439",
+    "monto": 16439210,
+    "estado": "sin-activar",
+    "notas": ""
+  },
+  {
+    "id": 7,
+    "nombre": "TORTA MAURO",
+    "nroCliente": "",
+    "antiguedad": "2026",
+    "telefono": "5493492609681",
+    "monto": 15837405,
+    "estado": "sin-activar",
+    "notas": ""
+  },
+  {
+    "id": 8,
+    "nombre": "MARTINO DARDO",
+    "nroCliente": "",
+    "antiguedad": "2026",
+    "telefono": "5493492584159",
+    "monto": 13561073,
+    "estado": "sin-activar",
+    "notas": ""
+  },
+  {
+    "id": 9,
+    "nombre": "OCOCHA",
+    "nroCliente": "",
+    "antiguedad": "2026",
+    "telefono": "5493492411762",
+    "monto": 7042013,
+    "estado": "sin-activar",
+    "notas": ""
+  },
+  {
+    "id": 10,
+    "nombre": "FRANCO RICARDO",
+    "nroCliente": "",
+    "antiguedad": "2026",
+    "telefono": "5493491414970",
+    "monto": 5131156,
+    "estado": "sin-activar",
+    "notas": ""
+  },
+  {
+    "id": 11,
+    "nombre": "RICO MONICA",
+    "nroCliente": "",
+    "antiguedad": "2026",
+    "telefono": "5493491698196",
+    "monto": 4350000,
+    "estado": "sin-activar",
+    "notas": ""
+  },
+  {
+    "id": 12,
+    "nombre": "GARCIA DARIO",
+    "nroCliente": "",
+    "antiguedad": "2026",
+    "telefono": "5493493402578",
+    "monto": 2972486,
+    "estado": "sin-activar",
+    "notas": ""
+  },
+  {
+    "id": 13,
+    "nombre": "ARDILES HERNAN",
+    "nroCliente": "",
+    "antiguedad": "2026",
+    "telefono": "5493426314001",
+    "monto": 2958925,
+    "estado": "sin-activar",
+    "notas": ""
+  },
+  {
+    "id": 14,
+    "nombre": "CARNERO LORE",
+    "nroCliente": "",
+    "antiguedad": "2026",
+    "telefono": "5493426113813",
+    "monto": 720000,
+    "estado": "sin-activar",
+    "notas": ""
+  },
+  {
+    "id": 15,
+    "nombre": "GALFRE HERNAN",
+    "nroCliente": "",
+    "antiguedad": "2026",
+    "telefono": "5493426314001",
+    "monto": 548237,
+    "estado": "sin-activar",
+    "notas": ""
+  }
+];
+let clientes = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || DEUDORES_INICIALES || [];
 let modalTelefono = '';
 let modalCliente = null;
 

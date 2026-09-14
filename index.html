@@ -8,417 +8,131 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-primary: #0d0d0d;
-            --bg-secondary: #1a1a1a;
-            --bg-tertiary: #262626;
-            --text-primary: #f5f5f5;
-            --text-secondary: #b3b3b3;
-            --text-tertiary: #808080;
-            --accent-1: #ff6b9d;
-            --accent-2: #00d9ff;
-            --accent-3: #a78bfa;
-            --border: #333333;
-            --success: #10b981;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html { scroll-behavior: smooth; }
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            min-height: 100vh;
-            line-height: 1.6;
-        }
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
-        header {
-            background: rgba(13, 13, 13, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            padding: 1rem 0;
-        }
-        header .container { display: flex; justify-content: space-between; align-items: center; }
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            font-size: 1.5rem;
-            font-weight: 600;
-            text-decoration: none;
-            color: var(--text-primary);
-            letter-spacing: -0.5px;
-        }
-        .logo-icon { font-size: 1.8rem; }
-        nav { display: flex; gap: 2.5rem; }
-        nav a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 0.95rem;
-            font-weight: 400;
-            transition: color 0.2s;
-        }
-        nav a:hover { color: var(--accent-2); }
-        .hero {
-            padding: 5rem 0;
-            text-align: center;
-            background: linear-gradient(135deg, rgba(255, 107, 157, 0.05) 0%, rgba(0, 217, 255, 0.05) 100%);
-            border-bottom: 1px solid var(--border);
-        }
-        .hero h1 {
-            font-size: 3.5rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            letter-spacing: -1px;
-            line-height: 1.2;
-            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-2) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .hero p {
-            font-size: 1.25rem;
-            color: var(--text-secondary);
-            margin-bottom: 2.5rem;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-            font-weight: 300;
-        }
-        .hero-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1.5rem;
-            margin-top: 3rem;
-            max-width: 900px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        .stat-card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            padding: 2rem;
-            border-radius: 12px;
-            transition: all 0.3s;
-        }
-        .stat-card:hover {
-            border-color: var(--accent-2);
-            box-shadow: 0 8px 32px rgba(0, 217, 255, 0.1);
-            transform: translateY(-4px);
-        }
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 600;
-            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 0.75rem;
-        }
-        .stat-label {
-            color: var(--text-tertiary);
-            font-size: 0.9rem;
-        }
-        .section { padding: 4rem 0; border-bottom: 1px solid var(--border); }
-        .section h2 {
-            font-size: 2.5rem;
-            margin-bottom: 3rem;
-            text-align: center;
-            font-weight: 600;
-            letter-spacing: -0.8px;
-        }
-        .reports-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
-        }
-        .report-card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            transition: all 0.3s;
-        }
-        .report-card:hover {
-            border-color: var(--accent-2);
-            box-shadow: 0 16px 40px rgba(0, 217, 255, 0.15);
-            transform: translateY(-8px);
-        }
-        .report-card.featured { border-color: var(--accent-2); }
-        .report-header {
-            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
-            padding: 2rem;
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-        }
-        .report-icon { font-size: 2.5rem; }
-        .report-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: white;
-        }
-        .report-body { padding: 2rem; flex-grow: 1; }
-        .report-desc {
-            color: var(--text-secondary);
-            margin-bottom: 1.5rem;
-            font-size: 0.95rem;
-        }
-        .report-meta {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-            font-size: 0.85rem;
-        }
-        .meta-item {
-            background: var(--bg-tertiary);
-            padding: 0.75rem;
-            border-radius: 6px;
-            border: 1px solid var(--border);
-        }
-        .meta-label {
-            color: var(--text-tertiary);
-            display: block;
-            margin-bottom: 0.25rem;
-        }
-        .meta-value {
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-        .report-link {
-            display: inline-block;
-            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-        .report-link:hover {
-            transform: scale(1.05);
-            box-shadow: 0 8px 20px rgba(255, 107, 157, 0.3);
-        }
-        .report-status {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            background: rgba(16, 185, 129, 0.2);
-            color: var(--success);
-        }
-        .status-new {
-            background: rgba(0, 217, 255, 0.2);
-            color: var(--accent-2);
-        }
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2.5rem;
-        }
-        .feature { text-align: center; }
-        .feature-icon { font-size: 2.5rem; margin-bottom: 1rem; }
-        .feature h3 {
-            font-size: 1.1rem;
-            margin-bottom: 0.75rem;
-            font-weight: 600;
-        }
-        .feature p {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-            font-weight: 300;
-        }
-        footer {
-            background: var(--bg-secondary);
-            border-top: 1px solid var(--border);
-            padding: 3rem 0;
-            text-align: center;
-        }
-        footer p {
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            font-weight: 300;
-        }
-        @media (max-width: 768px) {
-            .hero h1 { font-size: 2.5rem; }
-            nav { gap: 1.5rem; font-size: 0.85rem; }
-            .reports-grid { grid-template-columns: 1fr; }
-            .container { padding: 0 1rem; }
-            .section { padding: 2.5rem 0; }
-            .section h2 { font-size: 2rem; }
-        }
+        :root{--bg:#0d0d0d;--bg2:#1a1a1a;--bg3:#262626;--text:#f5f5f5;--text2:#b3b3b3;--text3:#808080;--a1:#ff6b9d;--a2:#00d9ff;--a3:#a78bfa;--border:#333;--green:#10b981}
+        *{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+        .container{max-width:1200px;margin:0 auto;padding:0 2rem}
+        header{background:rgba(13,13,13,0.95);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:1000;padding:1rem 0}
+        header .container{display:flex;justify-content:space-between;align-items:center}
+        .logo{display:flex;align-items:center;gap:0.75rem;font-size:1.5rem;font-weight:600;text-decoration:none;color:var(--text)}
+        nav{display:flex;gap:2.5rem}nav a{color:var(--text2);text-decoration:none;font-size:0.95rem;transition:color 0.2s}nav a:hover{color:var(--a2)}
+        .hero{padding:5rem 0;text-align:center;background:linear-gradient(135deg,rgba(255,107,157,0.05),rgba(0,217,255,0.05));border-bottom:1px solid var(--border)}
+        .hero h1{font-size:3.5rem;font-weight:600;margin-bottom:1rem;letter-spacing:-1px;background:linear-gradient(135deg,var(--text),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .hero p{font-size:1.25rem;color:var(--text2);margin-bottom:2.5rem;max-width:600px;margin-left:auto;margin-right:auto;font-weight:300}
+        .hero-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.5rem;margin-top:3rem;max-width:900px;margin-left:auto;margin-right:auto}
+        .stat-card{background:var(--bg2);border:1px solid var(--border);padding:2rem;border-radius:12px;transition:all 0.3s}
+        .stat-card:hover{border-color:var(--a2);box-shadow:0 8px 32px rgba(0,217,255,0.1);transform:translateY(-4px)}
+        .stat-value{font-size:2rem;font-weight:600;background:linear-gradient(135deg,var(--a1),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:0.75rem}
+        .stat-label{color:var(--text3);font-size:0.9rem}
+        .section{padding:4rem 0;border-bottom:1px solid var(--border)}
+        .section h2{font-size:2.5rem;margin-bottom:3rem;text-align:center;font-weight:600;letter-spacing:-0.8px}
+        .reports-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:2rem}
+        .report-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;transition:all 0.3s}
+        .report-card:hover{border-color:var(--a2);box-shadow:0 16px 40px rgba(0,217,255,0.15);transform:translateY(-8px)}
+        .report-card.featured{border-color:var(--a2)}
+        .report-header{background:linear-gradient(135deg,var(--a1),var(--a2));padding:2rem;display:flex;align-items:center;gap:1.5rem}
+        .report-icon{font-size:2.5rem}.report-title{font-size:1.3rem;font-weight:600;color:white}
+        .report-body{padding:2rem;flex-grow:1}
+        .report-desc{color:var(--text2);margin-bottom:1.5rem;font-size:0.95rem}
+        .report-meta{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;font-size:0.85rem}
+        .meta-item{background:var(--bg3);padding:0.75rem;border-radius:6px;border:1px solid var(--border)}
+        .meta-label{color:var(--text3);display:block;margin-bottom:0.25rem}.meta-value{font-weight:600}
+        .report-link{display:inline-block;background:linear-gradient(135deg,var(--a1),var(--a2));color:white;padding:0.75rem 1.5rem;border-radius:6px;text-decoration:none;font-weight:500;transition:all 0.2s}
+        .report-link:hover{transform:scale(1.05);box-shadow:0 8px 20px rgba(255,107,157,0.3)}
+        .report-status{display:inline-block;padding:0.25rem 0.75rem;border-radius:4px;font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;background:rgba(16,185,129,0.2);color:var(--green)}
+        .status-new{background:rgba(0,217,255,0.2);color:var(--a2)}
+        footer{background:var(--bg2);border-top:1px solid var(--border);padding:3rem 0;text-align:center}
+        footer p{margin-bottom:0.5rem;font-size:0.9rem;color:var(--text2);font-weight:300}
+        @media(max-width:768px){.hero h1{font-size:2.5rem}nav{gap:1.5rem;font-size:0.85rem}.reports-grid{grid-template-columns:1fr}.container{padding:0 1rem}}
     </style>
 </head>
 <body>
-    <header>
-        <div class="container">
-            <a href="#" class="logo">
-                <span class="logo-icon">🎨</span>
-                <span>Pinturería Adrián</span>
-            </a>
-            <nav>
-                <a href="#reportes">Reportes</a>
-                <a href="#features">Características</a>
-            </nav>
+    <header><div class="container">
+        <a href="#" class="logo"><span>🎨</span><span>Pinturería Adrián</span></a>
+        <nav><a href="#reportes">Reportes</a></nav>
+    </div></header>
+    <section class="hero"><div class="container">
+        <h1>Sistema de Reportes y Administración</h1>
+        <p>Análisis financiero, flujo de caja y gestión de cobranzas</p>
+        <div class="hero-stats">
+            <div class="stat-card"><div class="stat-value">$13.61M</div><div class="stat-label">Ventas Agosto 2026</div></div>
+            <div class="stat-card"><div class="stat-value">$7.74M</div><div class="stat-label">CxC Pendiente</div></div>
+            <div class="stat-card"><div class="stat-value">$1.21M</div><div class="stat-label">CxP Total</div></div>
         </div>
-    </header>
-    <main>
-        <section class="hero">
-            <div class="container">
-                <h1>Sistema de Reportes y Administración</h1>
-                <p>Análisis financiero, flujo de caja y gestión de cobranzas en tiempo real</p>
-                <div class="hero-stats">
-                    <div class="stat-card">
-                        <div class="stat-value">$21.43M</div>
-                        <div class="stat-label">Ventas Julio 2026</div>
+    </div></section>
+    <section class="section" id="reportes"><div class="container">
+        <h2>Reportes Disponibles</h2>
+        <div class="reports-grid">
+            <div class="report-card featured">
+                <div class="report-header"><div class="report-icon">📊</div><div><div class="report-title">Agosto 2026</div><span class="report-status status-new">Nuevo</span></div></div>
+                <div class="report-body">
+                    <p class="report-desc">CxC en mínimos (-27%), saldo de caja negativo, análisis de retiros y plan septiembre.</p>
+                    <div class="report-meta">
+                        <div class="meta-item"><span class="meta-label">Ventas</span><span class="meta-value">$13.61M</span></div>
+                        <div class="meta-item"><span class="meta-label">Cobros</span><span class="meta-value">$9.78M</span></div>
+                        <div class="meta-item"><span class="meta-label">Facturas</span><span class="meta-value">115</span></div>
+                        <div class="meta-item"><span class="meta-label">Deudores</span><span class="meta-value">77</span></div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-value">$10.54M</div>
-                        <div class="stat-label">CxC Pendiente</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">$4.95M</div>
-                        <div class="stat-label">CxP Total</div>
-                    </div>
+                    <a href="reportes/reporte_agosto_2026.html" class="report-link">Ver Reporte →</a>
                 </div>
             </div>
-        </section>
-        <section class="section" id="reportes">
-            <div class="container">
-                <h2>Reportes Disponibles</h2>
-                <div class="reports-grid">
-                    <div class="report-card featured">
-                        <div class="report-header">
-                            <div class="report-icon">📊</div>
-                            <div>
-                                <div class="report-title">Julio 2026</div>
-                                <span class="report-status status-new">Nuevo</span>
-                            </div>
-                        </div>
-                        <div class="report-body">
-                            <p class="report-desc">Reporte con evolución trimestral, resultado del plan de cobranzas y análisis de retiros.</p>
-                            <div class="report-meta">
-                                <div class="meta-item"><span class="meta-label">Ventas</span><span class="meta-value">$21.43M</span></div>
-                                <div class="meta-item"><span class="meta-label">Cobros</span><span class="meta-value">$24.63M</span></div>
-                                <div class="meta-item"><span class="meta-label">Facturas</span><span class="meta-value">92</span></div>
-                                <div class="meta-item"><span class="meta-label">Deudores</span><span class="meta-value">89</span></div>
-                            </div>
-                            <a href="reportes/reporte_julio_2026.html" class="report-link">Ver Reporte →</a>
-                        </div>
+            <div class="report-card">
+                <div class="report-header"><div class="report-icon">📈</div><div><div class="report-title">Julio 2026</div><span class="report-status">Activo</span></div></div>
+                <div class="report-body">
+                    <p class="report-desc">Evolución trimestral, resultado del plan de cobranzas y análisis de retiros.</p>
+                    <div class="report-meta">
+                        <div class="meta-item"><span class="meta-label">Ventas</span><span class="meta-value">$10.71M</span></div>
+                        <div class="meta-item"><span class="meta-label">Cobros</span><span class="meta-value">$24.63M</span></div>
+                        <div class="meta-item"><span class="meta-label">Facturas</span><span class="meta-value">91</span></div>
+                        <div class="meta-item"><span class="meta-label">Deudores</span><span class="meta-value">89</span></div>
                     </div>
-                    <div class="report-card">
-                        <div class="report-header">
-                            <div class="report-icon">📈</div>
-                            <div>
-                                <div class="report-title">Junio 2026</div>
-                                <span class="report-status">Activo</span>
-                            </div>
-                        </div>
-                        <div class="report-body">
-                            <p class="report-desc">Análisis de plazos cobro vs pago, flujo de caja y compromiso de CxP.</p>
-                            <div class="report-meta">
-                                <div class="meta-item"><span class="meta-label">Ventas</span><span class="meta-value">$38.45M</span></div>
-                                <div class="meta-item"><span class="meta-label">Ingreso Caja</span><span class="meta-value">$5.63M</span></div>
-                                <div class="meta-item"><span class="meta-label">Facturas</span><span class="meta-value">43</span></div>
-                                <div class="meta-item"><span class="meta-label">Deudores</span><span class="meta-value">98</span></div>
-                            </div>
-                            <a href="reportes/reporte_junio_2026.html" class="report-link">Ver Reporte →</a>
-                        </div>
-                    </div>
-                    <div class="report-card">
-                        <div class="report-header">
-                            <div class="report-icon">📉</div>
-                            <div>
-                                <div class="report-title">Mayo 2026</div>
-                                <span class="report-status">Activo</span>
-                            </div>
-                        </div>
-                        <div class="report-body">
-                            <p class="report-desc">Reporte ejecutivo con comparativo vs abril. Análisis de ventas y cobranzas.</p>
-                            <div class="report-meta">
-                                <div class="meta-item"><span class="meta-label">Ventas</span><span class="meta-value">$16.22M</span></div>
-                                <div class="meta-item"><span class="meta-label">Ingreso Caja</span><span class="meta-value">$19.45M</span></div>
-                                <div class="meta-item"><span class="meta-label">Facturas</span><span class="meta-value">64</span></div>
-                                <div class="meta-item"><span class="meta-label">Deudores</span><span class="meta-value">72</span></div>
-                            </div>
-                            <a href="reportes/reporte_mayo_2026.html" class="report-link">Ver Reporte →</a>
-                        </div>
-                    </div>
-                    <div class="report-card">
-                        <div class="report-header">
-                            <div class="report-icon">💰</div>
-                            <div>
-                                <div class="report-title">Tablero Cobranzas</div>
-                                <span class="report-status">Activo</span>
-                            </div>
-                        </div>
-                        <div class="report-body">
-                            <p class="report-desc">Dashboard interactivo de cobranzas con seguimiento de CxC vencida y envío WhatsApp.</p>
-                            <div class="report-meta">
-                                <div class="meta-item"><span class="meta-label">CxC Vencida</span><span class="meta-value">$5.44M</span></div>
-                                <div class="meta-item"><span class="meta-label">Aging +90d</span><span class="meta-value">$3.63M</span></div>
-                                <div class="meta-item"><span class="meta-label">Deudores</span><span class="meta-value">89</span></div>
-                                <div class="meta-item"><span class="meta-label">Prioridad</span><span class="meta-value">Alta</span></div>
-                            </div>
-                            <a href="reportes/tablero-cobranzas.html" class="report-link">Ver Tablero →</a>
-                        </div>
-                    </div>
+                    <a href="reportes/reporte_julio_2026.html" class="report-link">Ver Reporte →</a>
                 </div>
             </div>
-        </section>
-        <section class="section" id="features">
-            <div class="container">
-                <h2>Características</h2>
-                <div class="features">
-                    <div class="feature">
-                        <div class="feature-icon">📊</div>
-                        <h3>Análisis Completo</h3>
-                        <p>Ventas, cobranzas, pagos y flujo de caja con gráficos interactivos</p>
+            <div class="report-card">
+                <div class="report-header"><div class="report-icon">📉</div><div><div class="report-title">Junio 2026</div><span class="report-status">Activo</span></div></div>
+                <div class="report-body">
+                    <p class="report-desc">Mes atípico por venta intermediada. Plazos cobro vs pago y compromiso CxP.</p>
+                    <div class="report-meta">
+                        <div class="meta-item"><span class="meta-label">Ventas</span><span class="meta-value">$38.45M</span></div>
+                        <div class="meta-item"><span class="meta-label">Facturas</span><span class="meta-value">43</span></div>
+                        <div class="meta-item"><span class="meta-label">CxC</span><span class="meta-value">$11.20M</span></div>
+                        <div class="meta-item"><span class="meta-label">Deudores</span><span class="meta-value">98</span></div>
                     </div>
-                    <div class="feature">
-                        <div class="feature-icon">⏱️</div>
-                        <h3>Plazos y Aging</h3>
-                        <p>Seguimiento de CxC y CxP con análisis de vencimientos</p>
-                    </div>
-                    <div class="feature">
-                        <div class="feature-icon">🎯</div>
-                        <h3>Planes de Acción</h3>
-                        <p>Recomendaciones priorizadas para mejorar cash flow</p>
-                    </div>
-                    <div class="feature">
-                        <div class="feature-icon">📈</div>
-                        <h3>Evolución Trimestral</h3>
-                        <p>Comparativos mayo, junio y julio para detectar tendencias</p>
-                    </div>
-                    <div class="feature">
-                        <div class="feature-icon">💬</div>
-                        <h3>WhatsApp Masivo</h3>
-                        <p>Envío automatizado de mensajes de cobranza a deudores</p>
-                    </div>
-                    <div class="feature">
-                        <div class="feature-icon">⚡</div>
-                        <h3>Actualizaciones Rápidas</h3>
-                        <p>Nuevos reportes publicados automáticamente via Vercel</p>
-                    </div>
+                    <a href="reportes/reporte_junio_2026.html" class="report-link">Ver Reporte →</a>
                 </div>
             </div>
-        </section>
-    </main>
-    <footer>
-        <div class="container">
-            <p><strong>Pinturería Adrián</strong> — Sistema de Reportes y Administración</p>
-            <p>Ramona, Santa Fe — 2026</p>
-            <p style="margin-top: 1rem; color: var(--text-tertiary); font-size: 0.85rem;">Datos procesados desde Infocor GV6 | Última actualización: Agosto 2026</p>
+            <div class="report-card">
+                <div class="report-header"><div class="report-icon">📋</div><div><div class="report-title">Mayo 2026</div><span class="report-status">Activo</span></div></div>
+                <div class="report-body">
+                    <p class="report-desc">Reporte ejecutivo con comparativo vs abril.</p>
+                    <div class="report-meta">
+                        <div class="meta-item"><span class="meta-label">Ventas</span><span class="meta-value">$16.22M</span></div>
+                        <div class="meta-item"><span class="meta-label">Facturas</span><span class="meta-value">64</span></div>
+                        <div class="meta-item"><span class="meta-label">CxC</span><span class="meta-value">$10.03M</span></div>
+                        <div class="meta-item"><span class="meta-label">Deudores</span><span class="meta-value">72</span></div>
+                    </div>
+                    <a href="reportes/reporte_mayo_2026.html" class="report-link">Ver Reporte →</a>
+                </div>
+            </div>
+            <div class="report-card">
+                <div class="report-header"><div class="report-icon">💰</div><div><div class="report-title">Tablero Cobranzas</div><span class="report-status">Activo</span></div></div>
+                <div class="report-body">
+                    <p class="report-desc">Dashboard interactivo de cobranzas con envío WhatsApp.</p>
+                    <div class="report-meta">
+                        <div class="meta-item"><span class="meta-label">CxC Total</span><span class="meta-value">$7.74M</span></div>
+                        <div class="meta-item"><span class="meta-label">+90 días</span><span class="meta-value">$4.39M</span></div>
+                        <div class="meta-item"><span class="meta-label">Deudores</span><span class="meta-value">77</span></div>
+                        <div class="meta-item"><span class="meta-label">Con teléfono</span><span class="meta-value">34</span></div>
+                    </div>
+                    <a href="reportes/tablero-cobranzas.html" class="report-link">Ver Tablero →</a>
+                </div>
+            </div>
         </div>
-    </footer>
+    </div></section>
+    <footer><div class="container">
+        <p><strong>Pinturería Adrián</strong> — Sistema de Reportes y Administración</p>
+        <p>Ramona, Santa Fe — 2026</p>
+        <p style="margin-top:1rem;color:var(--text3);font-size:0.85rem;">Datos procesados desde Infocor GV6 | Última actualización: Septiembre 2026</p>
+    </div></footer>
 </body>
 </html>

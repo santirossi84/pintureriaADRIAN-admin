@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte Agosto 2026 — Pinturería Adrián</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --bg:#0d0d0d; --bg2:#1a1a1a; --bg3:#262626; --text:#f5f5f5; --text2:#b3b3b3; --text3:#808080; --accent1:#ff6b9d; --accent2:#00d9ff; --green:#10b981; --red:#ef4444; --yellow:#f59e0b; --purple:#a78bfa; --border:#333; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); line-height:1.6; }
+        .container { max-width:1200px; margin:0 auto; padding:0 2rem; }
+        header { background:rgba(13,13,13,0.95); backdrop-filter:blur(10px); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100; padding:1rem 0; }
+        header .container { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; }
+        .logo { display:flex; align-items:center; gap:0.75rem; font-size:1.3rem; font-weight:600; color:var(--text); text-decoration:none; }
+        nav { display:flex; gap:1.5rem; flex-wrap:wrap; }
+        nav a { color:var(--text3); text-decoration:none; font-size:0.85rem; transition:color 0.2s; }
+        nav a:hover { color:var(--accent2); }
+        .hero { padding:3rem 0; background:linear-gradient(135deg,rgba(255,107,157,0.05),rgba(0,217,255,0.05)); border-bottom:1px solid var(--border); text-align:center; }
+        .hero h1 { font-size:2.5rem; font-weight:600; letter-spacing:-1px; margin-bottom:0.5rem; background:linear-gradient(135deg,var(--text),var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .hero .sub { color:var(--text2); font-size:1.1rem; font-weight:300; }
+        .hero .fecha { color:var(--text3); font-size:0.9rem; margin-top:0.5rem; }
+        .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1rem; margin:2rem 0; }
+        .kpi { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.5rem; text-align:center; transition:all 0.3s; }
+        .kpi:hover { border-color:var(--accent2); transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,217,255,0.08); }
+        .kpi-val { font-size:1.6rem; font-weight:600; background:linear-gradient(135deg,var(--accent1),var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .kpi-label { color:var(--text3); font-size:0.8rem; margin-top:0.25rem; }
+        .kpi-delta { font-size:0.75rem; margin-top:0.25rem; }
+        .kpi-delta.up { color:var(--green); } .kpi-delta.down { color:var(--red); } .kpi-delta.neutral { color:var(--text3); }
+        .section { padding:3rem 0; border-bottom:1px solid var(--border); }
+        .section h2 { font-size:1.8rem; font-weight:600; letter-spacing:-0.5px; margin-bottom:2rem; display:flex; align-items:center; gap:0.75rem; }
+        .section h2 .num { color:var(--accent2); font-size:0.9rem; font-weight:500; background:rgba(0,217,255,0.1); padding:0.25rem 0.75rem; border-radius:4px; }
+        .table-wrap { overflow-x:auto; margin:1.5rem 0; }
+        table { width:100%; border-collapse:collapse; font-size:0.9rem; }
+        th { background:var(--bg3); color:var(--text2); text-align:left; padding:0.75rem 1rem; font-weight:500; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.5px; }
+        td { padding:0.75rem 1rem; border-bottom:1px solid var(--border); }
+        tr:hover td { background:rgba(255,255,255,0.02); }
+        .text-right { text-align:right; }
+        .mono { font-family:'SF Mono','Fira Code',monospace; font-size:0.85rem; }
+        .card { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.5rem; }
+        .card h3 { font-size:1.1rem; font-weight:600; margin-bottom:1rem; }
+        .cards-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:1.5rem; }
+        .badge { display:inline-block; padding:0.2rem 0.6rem; border-radius:4px; font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; }
+        .badge-green { background:rgba(16,185,129,0.15); color:var(--green); }
+        .badge-red { background:rgba(239,68,68,0.15); color:var(--red); }
+        .badge-yellow { background:rgba(245,158,11,0.15); color:var(--yellow); }
+        .chart-container { position:relative; max-width:350px; margin:1rem auto; }
+        .highlight-box { background:linear-gradient(135deg,rgba(16,185,129,0.08),rgba(0,217,255,0.08)); border:1px solid rgba(16,185,129,0.3); border-radius:10px; padding:1.5rem; margin:1.5rem 0; }
+        .highlight-box h4 { color:var(--green); font-size:1rem; margin-bottom:0.5rem; }
+        .highlight-box p { color:var(--text2); font-size:0.95rem; }
+        .warning-box { background:rgba(239,68,68,0.05); border:1px solid rgba(239,68,68,0.2); border-radius:10px; padding:1.5rem; margin:1.5rem 0; }
+        .warning-box h4 { color:var(--red); font-size:1rem; margin-bottom:0.5rem; }
+        .warning-box p { color:var(--text2); font-size:0.95rem; }
+        .action { background:var(--bg2); border-left:3px solid var(--accent2); padding:1rem 1.5rem; margin:1rem 0; border-radius:0 8px 8px 0; }
+        .action h4 { color:var(--accent2); font-size:0.95rem; margin-bottom:0.25rem; }
+        .action p { color:var(--text2); font-size:0.9rem; }
+        .progress-bar { background:var(--bg3); border-radius:6px; height:8px; overflow:hidden; margin:0.5rem 0; }
+        .progress-fill { height:100%; border-radius:6px; }
+        footer { padding:2rem 0; text-align:center; }
+        footer p { color:var(--text3); font-size:0.8rem; margin-bottom:0.25rem; }
+        @media (max-width:768px) { .hero h1{font-size:1.8rem;} .container{padding:0 1rem;} .kpi-grid{grid-template-columns:repeat(2,1fr);} }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <a href="../" class="logo">🎨 Pinturería Adrián</a>
+            <nav>
+                <a href="#resumen">Resumen</a><a href="#trimestral">Trimestral</a><a href="#flujo">Flujo</a>
+                <a href="#cobranzas">Cobranzas</a><a href="#cxp">CxP</a><a href="#ventas">Ventas</a>
+                <a href="#retiros">Retiros</a><a href="#plan">Plan</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1>Reporte Ejecutivo — Agosto 2026</h1>
+            <p class="sub">Análisis financiero, cobranzas y gestión operativa</p>
+            <p class="fecha">Período: 1 al 31 de agosto de 2026 • Generado: septiembre 2026</p>
+        </div>
+    </section>
+
+    <main>
+        <!-- 1. RESUMEN KPIs -->
+        <section class="section" id="resumen">
+            <div class="container">
+                <h2><span class="num">01</span> Resumen del Mes</h2>
+                <div class="kpi-grid">
+                    <div class="kpi">
+                        <div class="kpi-val">$13.61M</div>
+                        <div class="kpi-label">Ventas Netas</div>
+                        <div class="kpi-delta up">+27% vs jul ($10.71M)</div>
+                    </div>
+                    <div class="kpi">
+                        <div class="kpi-val">115</div>
+                        <div class="kpi-label">Facturas Emitidas</div>
+                        <div class="kpi-delta up">+26% vs jul (91)</div>
+                    </div>
+                    <div class="kpi">
+                        <div class="kpi-val">$118.3K</div>
+                        <div class="kpi-label">Ticket Promedio</div>
+                        <div class="kpi-delta neutral">estable vs jul ($118K)</div>
+                    </div>
+                    <div class="kpi">
+                        <div class="kpi-val">$9.78M</div>
+                        <div class="kpi-label">Cobros del Mes</div>
+                        <div class="kpi-delta neutral">ratio 0.72x sobre ventas</div>
+                    </div>
+                    <div class="kpi">
+                        <div class="kpi-val">$7.74M</div>
+                        <div class="kpi-label">CxC Giro Normal</div>
+                        <div class="kpi-delta up">-27% vs jul ($10.54M)</div>
+                    </div>
+                    <div class="kpi">
+                        <div class="kpi-val">$1.21M</div>
+                        <div class="kpi-label">CxP Total</div>
+                        <div class="kpi-delta up">-76% vs jul ($4.95M)</div>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4>CxC en fuerte baja: saneamiento de cartera</h4>
+                    <p>La CxC cayó de $10.54M a $7.74M (-27%), la más baja de los últimos 4 meses. Se redujo la cantidad de deudores de 89 a 77. La gestión de cobranzas sigue dando resultado: la cartera se achicó $2.8M en un mes. La CxP también bajó fuerte a $1.21M — solo queda Ramallo Martín como acreedor.</p>
+                </div>
+
+                <div class="warning-box">
+                    <h4>Atención: saldo de caja negativo -$1.65M</h4>
+                    <p>Los egresos ($11.43M) superaron los ingresos ($9.78M) en $1.65M. Los principales egresos fueron proveedores ($7.91M), retiro Adrián ($1.25M), sueldos ($1M), retiro Martín ($603K) y préstamo Martín ($487K). Se pagó más de lo que se cobró — el diferencial se cubrió con caja acumulada de meses anteriores.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. EVOLUCIÓN TRIMESTRAL -->
+        <section class="section" id="trimestral">
+            <div class="container">
+                <h2><span class="num">02</span> Evolución Jun → Jul → Ago</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr>
+                            <th>Indicador</th><th class="text-right">Junio</th><th class="text-right">Julio</th><th class="text-right">Agosto</th><th class="text-right">Ago vs Jul</th>
+                        </tr></thead>
+                        <tbody>
+                            <tr><td>Ventas netas</td><td class="text-right mono">$38.451.546</td><td class="text-right mono">$10.712.817</td><td class="text-right mono">$13.606.350</td><td class="text-right"><span class="badge badge-green">+27%</span></td></tr>
+                            <tr><td>Facturas</td><td class="text-right mono">43</td><td class="text-right mono">91</td><td class="text-right mono">115</td><td class="text-right"><span class="badge badge-green">+26%</span></td></tr>
+                            <tr><td>Ticket promedio</td><td class="text-right mono">$894.222</td><td class="text-right mono">$117.723</td><td class="text-right mono">$118.316</td><td class="text-right"><span class="badge badge-green">+1%</span></td></tr>
+                            <tr><td>Cobros</td><td class="text-right mono">—</td><td class="text-right mono">$24.628.063</td><td class="text-right mono">$9.776.736</td><td class="text-right"><span class="badge badge-red">-60%</span></td></tr>
+                            <tr><td>CxC giro normal</td><td class="text-right mono">$11.195.667</td><td class="text-right mono">$10.544.695</td><td class="text-right mono">$7.741.708</td><td class="text-right"><span class="badge badge-green">-27%</span></td></tr>
+                            <tr><td>CxP total</td><td class="text-right mono">$9.218.929</td><td class="text-right mono">$4.949.327</td><td class="text-right mono">$1.212.397</td><td class="text-right"><span class="badge badge-green">-76%</span></td></tr>
+                            <tr><td>Deudores activos</td><td class="text-right mono">98</td><td class="text-right mono">89</td><td class="text-right mono">77</td><td class="text-right"><span class="badge badge-green">-13%</span></td></tr>
+                            <tr><td>Ingreso en caja</td><td class="text-right mono">$5.634.020</td><td class="text-right mono">$12.488.875</td><td class="text-right mono">$9.776.736</td><td class="text-right"><span class="badge badge-red">-22%</span></td></tr>
+                            <tr><td>Saldo en caja</td><td class="text-right mono">$987.484</td><td class="text-right mono">$103.297</td><td class="text-right mono">-$1.654.259</td><td class="text-right"><span class="badge badge-red">⚠️</span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div style="max-width:700px; margin:2rem auto;">
+                    <canvas id="chartTrimestral"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. FLUJO DE CAJA -->
+        <section class="section" id="flujo">
+            <div class="container">
+                <h2><span class="num">03</span> Flujo de Caja</h2>
+                <div class="cards-grid">
+                    <div class="card">
+                        <h3>Movimiento de Caja</h3>
+                        <table>
+                            <tr><td>Ingreso Caja Pesos</td><td class="text-right mono" style="color:var(--green);">$9.776.736</td></tr>
+                            <tr><td>Egreso Total</td><td class="text-right mono" style="color:var(--red);">-$11.430.995</td></tr>
+                            <tr style="border-top:2px solid var(--border);"><td><strong>Saldo en Caja</strong></td><td class="text-right mono" style="color:var(--red);"><strong>-$1.654.259</strong></td></tr>
+                        </table>
+                        <p style="color:var(--text3); font-size:0.85rem; margin-top:1rem;">Se gastó $1.65M más de lo que entró. El déficit se cubrió con caja acumulada de meses anteriores. Principal causa: pago fuerte a proveedores ($7.91M) mientras los cobros bajaron a $9.78M.</p>
+                    </div>
+                    <div class="card">
+                        <h3>Distribución de Egresos</h3>
+                        <div class="chart-container"><canvas id="chartEgresos"></canvas></div>
+                    </div>
+                </div>
+                <div class="table-wrap" style="margin-top:1.5rem;">
+                    <table>
+                        <thead><tr><th>Concepto</th><th class="text-right">Monto</th><th class="text-right">% del Egreso</th></tr></thead>
+                        <tbody>
+                            <tr><td>Proveedores (Acreedores Varios)</td><td class="text-right mono">$7.908.920</td><td class="text-right">69.2%</td></tr>
+                            <tr><td>Retiro Adrián</td><td class="text-right mono">$1.246.516</td><td class="text-right">10.9%</td></tr>
+                            <tr><td>Sueldos y Jornales</td><td class="text-right mono">$1.000.000</td><td class="text-right">8.7%</td></tr>
+                            <tr><td>Retiro Martín</td><td class="text-right mono">$602.926</td><td class="text-right">5.3%</td></tr>
+                            <tr><td>Préstamo Martín Rossi</td><td class="text-right mono">$486.633</td><td class="text-right">4.3%</td></tr>
+                            <tr><td>Impuestos Nacionales</td><td class="text-right mono">$150.000</td><td class="text-right">1.3%</td></tr>
+                            <tr><td>Fletes por Compras</td><td class="text-right mono">$36.000</td><td class="text-right">0.3%</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. CxC Y COBRANZAS -->
+        <section class="section" id="cobranzas">
+            <div class="container">
+                <h2><span class="num">04</span> Cuentas por Cobrar y Cobranzas</h2>
+                <div class="highlight-box">
+                    <h4>Cartera en mínimos: -27% vs julio</h4>
+                    <p>CxC bajó de $10.54M a $7.74M, la cifra más baja desde mayo. La cantidad de deudores se redujo de 89 a 77. Toda la CxC está vencida — no hay saldos "a vencer", lo que indica que las ventas de agosto se cobraron al contado o con plazos muy cortos. El foco ahora es la deuda vieja: $4.39M (+90 días) que representa el 56.6% del total.</p>
+                </div>
+                <div class="cards-grid">
+                    <div class="card">
+                        <h3>CxC Giro Normal al 31/8</h3>
+                        <div style="text-align:center; margin:1rem 0;">
+                            <div style="font-size:2rem; font-weight:600; color:var(--accent2);">$7.741.708</div>
+                            <div style="color:var(--text3);">77 deudores activos</div>
+                        </div>
+                        <div style="display:flex; gap:1rem; margin-top:1rem;">
+                            <div style="flex:1; text-align:center;">
+                                <div style="font-size:1.3rem; font-weight:600; color:var(--yellow);">32.2%</div>
+                                <div style="color:var(--text3); font-size:0.8rem;">0-30 días</div>
+                                <div style="color:var(--text2); font-size:0.85rem;">$2.490.000</div>
+                            </div>
+                            <div style="flex:1; text-align:center;">
+                                <div style="font-size:1.3rem; font-weight:600; color:var(--red);">56.6%</div>
+                                <div style="color:var(--text3); font-size:0.8rem;">+90 días</div>
+                                <div style="color:var(--text2); font-size:0.85rem;">$4.385.000</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3>Aging CxC</h3>
+                        <div class="chart-container"><canvas id="chartAging"></canvas></div>
+                    </div>
+                </div>
+                <div class="table-wrap" style="margin-top:1.5rem;">
+                    <table>
+                        <thead><tr><th>Tramo</th><th class="text-right">Monto</th><th class="text-right">%</th><th>Barra</th></tr></thead>
+                        <tbody>
+                            <tr><td><span class="badge badge-yellow">0-30 días</span></td><td class="text-right mono">$2.489.952</td><td class="text-right">32.2%</td><td><div class="progress-bar"><div class="progress-fill" style="width:32.2%;background:var(--yellow);"></div></div></td></tr>
+                            <tr><td><span class="badge badge-yellow">31-60 días</span></td><td class="text-right mono">$8.985</td><td class="text-right">0.1%</td><td><div class="progress-bar"><div class="progress-fill" style="width:0.1%;background:var(--yellow);"></div></div></td></tr>
+                            <tr><td><span class="badge badge-red">61-90 días</span></td><td class="text-right mono">$857.533</td><td class="text-right">11.1%</td><td><div class="progress-bar"><div class="progress-fill" style="width:11.1%;background:var(--red);"></div></div></td></tr>
+                            <tr><td><span class="badge badge-red">+90 días</span></td><td class="text-right mono">$4.385.238</td><td class="text-right">56.6%</td><td><div class="progress-bar"><div class="progress-fill" style="width:56.6%;background:var(--red);"></div></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h3 style="margin-top:2rem; margin-bottom:1rem;">Top 10 Deudores</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>#</th><th>Cliente</th><th class="text-right">Deuda</th><th class="text-right">% CxC</th></tr></thead>
+                        <tbody>
+                            <tr><td>1</td><td>MONDINO NATALIA</td><td class="text-right mono">$663.982</td><td class="text-right">8.6%</td></tr>
+                            <tr><td>2</td><td>RAMALLO MARTIN</td><td class="text-right mono">$641.639</td><td class="text-right">8.3%</td></tr>
+                            <tr><td>3</td><td>MARCHETTI HECTOR</td><td class="text-right mono">$506.629</td><td class="text-right">6.5%</td></tr>
+                            <tr><td>4</td><td>CAGLIERIS NELLY</td><td class="text-right mono">$350.000</td><td class="text-right">4.5%</td></tr>
+                            <tr><td>5</td><td>ANTONIOZ MARTA</td><td class="text-right mono">$313.154</td><td class="text-right">4.0%</td></tr>
+                            <tr><td>6</td><td>PORPORATO RENE</td><td class="text-right mono">$259.501</td><td class="text-right">3.4%</td></tr>
+                            <tr><td>7</td><td>ERARD MIGUEL</td><td class="text-right mono">$248.661</td><td class="text-right">3.2%</td></tr>
+                            <tr><td>8</td><td>OVENA JORGE</td><td class="text-right mono">$247.279</td><td class="text-right">3.2%</td></tr>
+                            <tr><td>9</td><td>IMHOF CARLOS</td><td class="text-right mono">$243.035</td><td class="text-right">3.1%</td></tr>
+                            <tr><td>10</td><td>TORTA CARLOS</td><td class="text-right mono">$217.924</td><td class="text-right">2.8%</td></tr>
+                        </tbody>
+                        <tfoot><tr style="border-top:2px solid var(--border);"><td colspan="2"><strong>Top 10</strong></td><td class="text-right mono"><strong>$3.691.804</strong></td><td class="text-right"><strong>47.7%</strong></td></tr></tfoot>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. CxP -->
+        <section class="section" id="cxp">
+            <div class="container">
+                <h2><span class="num">05</span> Cuentas por Pagar</h2>
+                <div class="card" style="max-width:600px;">
+                    <h3>CxP al 31/8</h3>
+                    <div style="text-align:center; margin:1rem 0;">
+                        <div style="font-size:2rem; font-weight:600; color:var(--accent1);">$1.212.397</div>
+                        <div style="color:var(--text3);">1 proveedor</div>
+                    </div>
+                    <table>
+                        <thead><tr><th>Proveedor</th><th class="text-right">Deuda</th><th class="text-right">%</th></tr></thead>
+                        <tbody>
+                            <tr><td>RAMALLO MARTIN</td><td class="text-right mono">$1.212.397</td><td class="text-right">100%</td></tr>
+                        </tbody>
+                    </table>
+                    <p style="color:var(--text3); font-size:0.85rem; margin-top:1rem;">Pinturería Ariel está completamente pagada. Solo queda la deuda con Ramallo Martín, que también es deudor ($641K en CxC). Posición neta: Ramallo nos debe más de lo que le debemos (saldo a favor $571K).</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. VENTAS -->
+        <section class="section" id="ventas">
+            <div class="container">
+                <h2><span class="num">06</span> Ventas</h2>
+                <div class="cards-grid">
+                    <div class="card">
+                        <h3>Top 10 Clientes por Ventas</h3>
+                        <div class="table-wrap">
+                            <table>
+                                <thead><tr><th>#</th><th>Cliente</th><th class="text-right">Importe</th><th class="text-right">%</th></tr></thead>
+                                <tbody>
+                                    <tr><td>1</td><td>COMUNA DE RAMONA</td><td class="text-right mono">$4.517.566</td><td class="text-right">33.2%</td></tr>
+                                    <tr><td>2</td><td>GARAY ADRIAN</td><td class="text-right mono">$1.047.220</td><td class="text-right">7.7%</td></tr>
+                                    <tr><td>3</td><td>MARTINO DARDO</td><td class="text-right mono">$845.167</td><td class="text-right">6.2%</td></tr>
+                                    <tr><td>4</td><td>BESSONE RENE</td><td class="text-right mono">$496.227</td><td class="text-right">3.6%</td></tr>
+                                    <tr><td>5</td><td>FRANCO SERGIO</td><td class="text-right mono">$408.062</td><td class="text-right">3.0%</td></tr>
+                                    <tr><td>6</td><td>C.C.Y DEP.RAMONA</td><td class="text-right mono">$403.620</td><td class="text-right">3.0%</td></tr>
+                                    <tr><td>7</td><td>GRIMALDI DIEGO</td><td class="text-right mono">$402.361</td><td class="text-right">3.0%</td></tr>
+                                    <tr><td>8</td><td>DIAS DAVID</td><td class="text-right mono">$384.130</td><td class="text-right">2.8%</td></tr>
+                                    <tr><td>9</td><td>ANTONIOZ DIEGO</td><td class="text-right mono">$291.454</td><td class="text-right">2.1%</td></tr>
+                                    <tr><td>10</td><td>ALESANDRIA ESTEFANIA</td><td class="text-right mono">$285.010</td><td class="text-right">2.1%</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p style="color:var(--text3); font-size:0.85rem; margin-top:1rem;">Comuna de Ramona reemplaza a Mutual Regional como principal cliente (33.2%). Los top 10 concentran el 66.7% de las ventas. Mayor diversificación que meses anteriores.</p>
+                    </div>
+                    <div class="card">
+                        <h3>Indicadores de Ventas</h3>
+                        <table>
+                            <tr><td>Ventas totales</td><td class="text-right mono">$13.606.350</td></tr>
+                            <tr><td>Facturas emitidas</td><td class="text-right mono">115</td></tr>
+                            <tr><td>Ticket promedio</td><td class="text-right mono">$118.316</td></tr>
+                            <tr><td>Clientes que compraron</td><td class="text-right mono">~60</td></tr>
+                            <tr><td>Top 1 concentración</td><td class="text-right mono">33.2%</td></tr>
+                            <tr><td>Top 10 concentración</td><td class="text-right mono">66.7%</td></tr>
+                        </table>
+                        <p style="color:var(--text3); font-size:0.85rem; margin-top:1rem;">Las ventas crecen 27% vs julio con más facturas emitidas (115 vs 91). El ticket promedio se mantiene estable en $118K — crecimiento por volumen de operaciones, no por tickets más grandes.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. RETIROS -->
+        <section class="section" id="retiros">
+            <div class="container">
+                <h2><span class="num">07</span> Retiros de Socios y Préstamos</h2>
+                <div class="cards-grid">
+                    <div class="card">
+                        <h3>Agosto 2026</h3>
+                        <table>
+                            <thead><tr><th>Concepto</th><th class="text-right">Monto</th><th class="text-right">% Egresos</th></tr></thead>
+                            <tbody>
+                                <tr><td>Retiro Adrián</td><td class="text-right mono">$1.246.516</td><td class="text-right">10.9%</td></tr>
+                                <tr><td>Retiro Martín</td><td class="text-right mono">$602.926</td><td class="text-right">5.3%</td></tr>
+                                <tr><td>Préstamo Martín Rossi</td><td class="text-right mono">$486.633</td><td class="text-right">4.3%</td></tr>
+                            </tbody>
+                            <tfoot><tr style="border-top:2px solid var(--border);"><td><strong>Total</strong></td><td class="text-right mono"><strong>$2.336.075</strong></td><td class="text-right"><strong>20.4%</strong></td></tr></tfoot>
+                        </table>
+                    </div>
+                    <div class="card">
+                        <h3>Evolución Retiros</h3>
+                        <table>
+                            <thead><tr><th>Socio</th><th class="text-right">Junio</th><th class="text-right">Julio</th><th class="text-right">Agosto</th></tr></thead>
+                            <tbody>
+                                <tr><td>Martín</td><td class="text-right mono">$11.617</td><td class="text-right mono">$2.095.795</td><td class="text-right mono">$602.926</td></tr>
+                                <tr><td>Adrián</td><td class="text-right mono">$499.850</td><td class="text-right mono">$693.338</td><td class="text-right mono">$1.246.516</td></tr>
+                                <tr><td>Préstamo MR</td><td class="text-right mono">—</td><td class="text-right mono">—</td><td class="text-right mono">$486.633</td></tr>
+                            </tbody>
+                        </table>
+                        <p style="color:var(--text3); font-size:0.85rem; margin-top:1rem;">Retiros + préstamos representan el 20.4% de los egresos. Se incorpora la cuenta "Préstamo Martín Rossi" ($487K). Los retiros combinados de socios suman $2.34M sobre egresos totales de $11.43M.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 8. PLAN DE ACCIÓN -->
+        <section class="section" id="plan">
+            <div class="container">
+                <h2><span class="num">08</span> Plan de Acción — Septiembre 2026</h2>
+
+                <div class="action">
+                    <h4>1. Atacar la deuda +90 días ($4.39M — 56.6% de CxC)</h4>
+                    <p>Más de la mitad de la CxC tiene más de 90 días. Los 10 principales deudores concentran $3.69M. Priorizar: Mondino ($664K), Ramallo ($642K) y Marchetti ($507K). Usar el tablero de cobranzas con envío masivo WhatsApp para los que ya tienen teléfono cargado.</p>
+                </div>
+
+                <div class="action">
+                    <h4>2. Equilibrar flujo de caja</h4>
+                    <p>El saldo negativo de -$1.65M indica que se pagó más de lo que se cobró. Para septiembre, alinear los pagos a proveedores con los cobros efectivos. Evaluar si los retiros de socios ($2.34M) son sostenibles con el flujo actual.</p>
+                </div>
+
+                <div class="action">
+                    <h4>3. Compensar posición con Ramallo Martín</h4>
+                    <p>Ramallo es deudor ($642K) y proveedor ($1.21M). La posición neta es a favor de Ramallo por $571K. Negociar compensación parcial para reducir la CxP sin necesidad de caja.</p>
+                </div>
+
+                <div class="action">
+                    <h4>4. Sostener volumen de ventas</h4>
+                    <p>115 facturas es el mejor número del año. La Comuna de Ramona ($4.5M, 33.2%) es un buen motor pero genera concentración. Seguir diversificando con los clientes institucionales y particulares que traccionaron este mes.</p>
+                </div>
+
+                <div class="action">
+                    <h4>5. Monitorear retiros vs generación de caja</h4>
+                    <p>Los retiros + préstamos ($2.34M) representan el 20.4% de los egresos. Con un saldo de caja negativo, se necesita que septiembre genere superávit para recomponer la posición. Objetivo: cobros > egresos en septiembre.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p><strong>Pinturería Adrián</strong> — Reporte Ejecutivo Agosto 2026</p>
+            <p>Ramona, Santa Fe — Datos procesados desde Infocor GV6</p>
+        </div>
+    </footer>
+
+    <script>
+        new Chart(document.getElementById('chartTrimestral'), {
+            type:'bar',
+            data: {
+                labels:['Junio','Julio','Agosto'],
+                datasets:[
+                    {label:'Ventas',data:[38451546,10712817,13606350],backgroundColor:'rgba(0,217,255,0.7)',borderRadius:4},
+                    {label:'CxC',data:[11195667,10544695,7741708],backgroundColor:'rgba(255,107,157,0.7)',borderRadius:4},
+                    {label:'CxP',data:[9218929,4949327,1212397],backgroundColor:'rgba(167,139,250,0.7)',borderRadius:4}
+                ]
+            },
+            options:{responsive:true,plugins:{legend:{labels:{color:'#b3b3b3',font:{family:'Inter'}}},tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': $'+(ctx.raw/1000000).toFixed(1)+'M'}}},scales:{x:{ticks:{color:'#808080'},grid:{color:'#333'}},y:{ticks:{color:'#808080',callback:v=>'$'+(v/1000000).toFixed(0)+'M'},grid:{color:'#333'}}}}
+        });
+        new Chart(document.getElementById('chartEgresos'), {
+            type:'doughnut',
+            data:{labels:['Proveedores','Retiro Adrián','Sueldos','Retiro Martín','Préstamo MR','Impuestos','Fletes'],datasets:[{data:[7908920,1246516,1000000,602926,486633,150000,36000],backgroundColor:['#00d9ff','#f59e0b','#a78bfa','#ff6b9d','#10b981','#ef4444','#808080'],borderColor:'#1a1a1a',borderWidth:2}]},
+            options:{responsive:true,cutout:'60%',plugins:{legend:{position:'bottom',labels:{color:'#b3b3b3',font:{family:'Inter',size:11},padding:12}},tooltip:{callbacks:{label:ctx=>{const t=ctx.dataset.data.reduce((a,b)=>a+b,0);return ctx.label+': $'+(ctx.raw/1000000).toFixed(1)+'M ('+(ctx.raw/t*100).toFixed(1)+'%)'}}}}}
+        });
+        new Chart(document.getElementById('chartAging'), {
+            type:'doughnut',
+            data:{labels:['0-30d','31-60d','61-90d','+90d'],datasets:[{data:[2489952,8985,857533,4385238],backgroundColor:['#f59e0b','#f97316','#ef4444','#dc2626'],borderColor:'#1a1a1a',borderWidth:2}]},
+            options:{responsive:true,cutout:'60%',plugins:{legend:{position:'bottom',labels:{color:'#b3b3b3',font:{family:'Inter',size:11},padding:12}},tooltip:{callbacks:{label:ctx=>ctx.label+': $'+(ctx.raw/1000000).toFixed(1)+'M ('+(ctx.raw/7741708*100).toFixed(1)+'%)'}}}}
+        });
+    </script>
+</body>
+</html>

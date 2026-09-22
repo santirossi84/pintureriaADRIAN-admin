@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arqueo de Caja — Pinturería Adrián</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    color-scheme: dark;
+    --void:#06070a; --panel:#0e1015; --panel2:#13161c; --line:#1f232b; --line2:#2a2f39;
+    --txt:#e6e8ec; --txt2:#8b93a1; --txt3:#5c6370;
+    --saber:#e11d2e; --saber-soft:rgba(225,29,46,.14); --saber-glow:0 0 6px rgba(255,60,70,.9), 0 0 18px rgba(225,29,46,.55);
+    --ok:#4ade80; --okbg:rgba(34,197,94,.12); --bad:#f87171; --badbg:rgba(225,29,46,.16); --warn:#fbbf24; --warnbg:rgba(245,158,11,.12);
+    --display:'Chakra Petch', -apple-system, "Segoe UI", sans-serif;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--txt); padding: 24px; line-height: 1.5; min-height: 100vh;
+    background-color: var(--void);
+    background-image:
+      radial-gradient(1px 1px at 12% 18%, rgba(255,255,255,.35) 50%, transparent 51%),
+      radial-gradient(1px 1px at 68% 8%, rgba(255,255,255,.25) 50%, transparent 51%),
+      radial-gradient(1px 1px at 84% 42%, rgba(255,255,255,.3) 50%, transparent 51%),
+      radial-gradient(1px 1px at 33% 64%, rgba(255,255,255,.2) 50%, transparent 51%),
+      radial-gradient(1px 1px at 52% 88%, rgba(255,255,255,.28) 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 91% 76%, rgba(255,210,210,.35) 50%, transparent 51%),
+      radial-gradient(1px 1px at 5% 92%, rgba(255,255,255,.22) 50%, transparent 51%),
+      radial-gradient(ellipse 60% 40% at 50% -10%, rgba(225,29,46,.10), transparent 70%);
+    background-size: 420px 420px, 420px 420px, 420px 420px, 420px 420px, 420px 420px, 420px 420px, 420px 420px, 100% 100%;
+    background-attachment: fixed;
+  }
+  .container { max-width: 1600px; margin: 0 auto; }
+  header { position: relative; background: linear-gradient(180deg, #0c0d11, #08090c); border: 1px solid var(--line); padding: 20px 26px 22px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; overflow: hidden; }
+  header::after { content: ""; position: absolute; left: 0; bottom: 0; height: 2px; width: 100%; background: linear-gradient(90deg, transparent, #ff4d58 12%, #fff1f1 50%, #ff4d58 88%, transparent); box-shadow: var(--saber-glow); transform-origin: left center; animation: ignite .9s cubic-bezier(.2,.7,.2,1) both .15s; }
+  @keyframes ignite { from { transform: scaleX(0); opacity: .4; } to { transform: scaleX(1); opacity: 1; } }
+  header h1 { font-family: var(--display); font-size: 24px; font-weight: 700; letter-spacing: .04em; }
+  header .subtitle { font-size: 13px; color: var(--txt2); margin-top: 2px; }
+  header a { color: var(--txt2); text-decoration: none; font-size: 14px; }
+  header a:hover { color: var(--txt); }
+  .layout { display: grid; grid-template-columns: minmax(0,1fr) 270px; gap: 20px; align-items: start; }
+  @media (max-width: 1100px) { .layout { grid-template-columns: minmax(0,1fr); } .mult { order: -1; } body { padding: 12px; } }
+  .panel { background: rgba(14,16,21,.92); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; backdrop-filter: blur(4px); }
+  .panel h2 { font-family: var(--display); font-size: 17px; font-weight: 600; letter-spacing: .03em; color: var(--txt); }
+  .toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+  .toolbar .spacer { flex: 1; }
+  .btn { padding: 8px 14px; border: 1px solid transparent; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: box-shadow .15s, background .15s, border-color .15s; }
+  .btn-primary { background: var(--saber); color: #fff; } .btn-primary:hover { box-shadow: var(--saber-glow); }
+  .btn-secondary { background: var(--panel2); color: var(--txt); border-color: var(--line2); } .btn-secondary:hover { border-color: #3a404c; background: #181b22; }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+  .btn-danger { background: transparent; color: var(--txt3); border-color: var(--line2); } .btn-danger:hover { color: var(--bad); border-color: rgba(248,113,113,.5); }
+  .btn:focus-visible, input:focus { outline: none; border-color: var(--saber) !important; box-shadow: 0 0 0 1px var(--saber), 0 0 12px rgba(225,29,46,.35); }
+  .tbl-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  table.planilla { width: 100%; font-size: 13px; }
+  table.planilla th { font-family: var(--display); background: var(--panel2); color: var(--txt2); padding: 10px 7px; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--line2); }
+  table.planilla th:first-child { text-align: left; border-top-left-radius: 6px; }
+  table.planilla th:last-child { border-top-right-radius: 6px; }
+  table.planilla td { padding: 7px 7px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+  table.planilla td:first-child { text-align: left; }
+  table.planilla tbody tr { cursor: pointer; }
+  table.planilla tbody tr:hover td { background: rgba(255,255,255,.025); }
+  table.planilla tbody tr.sel td { background: var(--saber-soft); }
+  table.planilla tbody tr.sel td:first-child { box-shadow: inset 2px 0 0 var(--saber); }
+  table.planilla td.calc { font-weight: 700; color: #fff; }
+  table.planilla td.sinconteo { color: var(--txt2); }
+  tr.carga td { background: rgba(225,29,46,.04); border-bottom: 1px solid rgba(225,29,46,.45); padding: 9px 6px; }
+  tr.carga input { width: 100%; min-width: 78px; padding: 6px 7px; border: 1px solid var(--line2); border-radius: 6px; font-size: 14px; font-family: inherit; text-align: right; font-variant-numeric: tabular-nums; background: #0a0c10; color: var(--txt); }
+  tr.carga input::placeholder { color: var(--txt3); }
+  tr.carga input[type=date] { text-align: left; min-width: 120px; }
+  tr.carga .fromMult { display: block; padding: 6px 8px; background: var(--saber-soft); border: 1px solid rgba(225,29,46,.35); border-radius: 6px; font-weight: 700; min-width: 100px; color: #fff; }
+  tr.carga td.acc { white-space: nowrap; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+  .pill.ok { background: var(--okbg); color: var(--ok); } .pill.bad { background: var(--badbg); color: var(--bad); } .pill.warn { background: var(--warnbg); color: var(--warn); } .pill.none { background: var(--panel2); color: var(--txt3); }
+  .mark { color: var(--warn); font-weight: 700; }
+  .obs-line { font-size: 12px; color: var(--txt2); margin-top: 12px; }
+  .obs-line input { width: 100%; padding: 7px 8px; border: 1px solid var(--line2); border-radius: 6px; font-size: 13px; font-family: inherit; margin-top: 4px; background: #0a0c10; color: var(--txt); }
+  .mult { position: sticky; top: 16px; }
+  .mult .fecha-mult { font-size: 13px; color: var(--txt2); margin: 2px 0 12px; }
+  table.mtab { width: 100%; font-size: 15px; }
+  table.mtab th { font-size: 12px; color: var(--txt3); font-weight: 600; text-align: right; padding: 4px 6px; border-bottom: 1px solid var(--line2); }
+  table.mtab th:first-child { text-align: left; }
+  table.mtab td { white-space: nowrap; padding: 4px 6px; text-align: right; border-bottom: 1px solid var(--line); }
+  table.mtab td:first-child { text-align: left; font-weight: 600; color: var(--txt2); }
+  table.mtab input { width: 58px; padding: 6px 8px; border: 1px solid var(--line2); border-radius: 6px; font-size: 15px; text-align: right; font-family: inherit; font-variant-numeric: tabular-nums; background: #0a0c10; color: #fff; }
+  table.mtab tfoot td { font-family: var(--display); font-weight: 700; font-size: 18px; border-top: 1px solid rgba(225,29,46,.6); border-bottom: none; padding-top: 12px; color: #fff; }
+  table.mtab tfoot td:last-child { text-shadow: 0 0 14px rgba(225,29,46,.55); }
+  .mult .hint { font-size: 12px; color: var(--txt3); margin-top: 10px; }
+  .foot { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; justify-content: space-between; margin-top: 14px; font-size: 12px; color: var(--txt3); }
+  .foot strong { color: var(--txt2); }
+  .foot .tol input { width: 90px; padding: 4px 8px; border: 1px solid var(--line2); border-radius: 6px; text-align: right; font-family: inherit; background: #0a0c10; color: var(--txt); }
+  .guardado { font-size: 12px; color: var(--ok); font-weight: 600; }
+  .aviso { background: rgba(245,158,11,.08); border: 1px solid rgba(245,158,11,.3); color: #fcd34d; border-radius: 8px; padding: 10px 14px; font-size: 13px; margin-bottom: 14px; display: none; }
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--panel2); border: 1px solid rgba(225,29,46,.5); color: #fff; padding: 10px 18px; border-radius: 8px; font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; box-shadow: 0 0 20px rgba(225,29,46,.25); }
+  .toast.show { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) { *, *::after { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div>
+      <h1>Arqueo de caja</h1>
+      <div class="subtitle">Pinturería Adrián</div>
+    </div>
+    <a href="../index.html">← Volver al inicio</a>
+  </header>
+
+  <div class="aviso" id="avisoBackup"></div>
+
+  <div class="layout">
+    <div class="panel">
+      <div class="toolbar">
+        <h2>Planilla de arqueos</h2>
+        <span class="guardado" id="estadoGuardado"></span>
+        <div class="spacer"></div>
+        <button class="btn btn-secondary btn-sm" id="btnCSV">Exportar a Excel</button>
+        <button class="btn btn-secondary btn-sm" id="btnBackup">Descargar backup</button>
+        <button class="btn btn-secondary btn-sm" id="btnRestore">Restaurar backup</button>
+        <input type="file" id="fileRestore" accept=".json" style="display:none">
+      </div>
+      <div class="tbl-wrap">
+        <table class="planilla">
+          <thead><tr><th>FECHA</th><th>EFECTIVO</th><th>ADRIÁN MUTUAL</th><th>BNA</th><th>CHEQUES</th><th>SALDO FINAL</th><th>SALDO SISTEMA</th><th>DIF. DE CAJA</th><th></th></tr></thead>
+          <tbody>
+            <tr class="carga">
+              <td><input type="date" id="fFecha" aria-label="Fecha"></td>
+              <td><span class="fromMult" id="fEfectivo" title="Sale del multiplicador">$ 0,00</span></td>
+              <td><input type="text" inputmode="decimal" id="fMutual" placeholder="0" aria-label="Adrián Mutual"></td>
+              <td><input type="text" inputmode="decimal" id="fBNA" placeholder="0" aria-label="BNA"></td>
+              <td><input type="text" inputmode="decimal" id="fCheques" placeholder="0" aria-label="Cheques"></td>
+              <td class="calc" id="fFinal">$ 0,00</td>
+              <td><input type="text" inputmode="decimal" id="fSistema" placeholder="0" aria-label="Saldo sistema"></td>
+              <td id="fDif"><span class="pill none">—</span></td>
+              <td class="acc"><button class="btn btn-primary btn-sm" id="btnGuardar">Guardar</button> <button class="btn btn-secondary btn-sm" id="btnCancelar" style="display:none" aria-label="Cancelar edición" title="Cancelar edición">✕</button></td>
+            </tr>
+          </tbody>
+          <tbody id="histBody"></tbody>
+        </table>
+      </div>
+      <div class="obs-line"><label for="fObs">Observaciones del arqueo que estás cargando</label><input type="text" id="fObs" placeholder="Opcional"></div>
+      <div class="foot">
+        <div class="tol"><label for="fTol">Tolerancia para "cuadra": ± $</label> <input type="text" inputmode="decimal" id="fTol"></div>
+        <div>Tocá una fila para verla o corregirla. En los importes podés sumar como en Excel: <strong>1313050+183350</strong></div>
+      </div>
+    </div>
+
+    <div class="panel mult">
+      <h2>Multiplicador</h2>
+      <div class="fecha-mult" id="multFecha">Arqueo nuevo</div>
+      <table class="mtab">
+        <thead><tr><th>Billete</th><th>Cantidad</th><th>Importe</th></tr></thead>
+        <tbody id="multBody"></tbody>
+        <tfoot><tr><td>Total</td><td></td><td id="multTotal">$ 0</td></tr></tfoot>
+      </table>
+      <p class="hint">El total pasa solo a la columna EFECTIVO.</p>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'arqueos_pintureria_v2';
+const OLD_KEY = 'arqueos_pintureria_v1';
+const TOL_KEY = 'arqueos_pintureria_tol';
+const BACKUP_KEY = 'arqueos_pintureria_ultimo_backup';
+const BILLETES = [20000, 10000, 2000, 1000, 500, 200, 100, 50, 20, 10];
+
+// Historial de ARQUEOS_PINTURERIA.xlsx — incluye el saldo sistema de cada fecha
+const ARQUEOS_INICIALES = [
+  {fecha:'2026-04-27', efectivo:589530,  mutual:4750, bna:14545.96, cheques:0, sistema:632811.04},
+  {fecha:'2026-04-28', efectivo:679940,  mutual:4750, bna:14545.96, cheques:0, sistema:704211.61},
+  {fecha:'2026-04-29', efectivo:339460,  mutual:4750, bna:14545.96, cheques:0, sistema:363731.04},
+  {fecha:'2026-05-08', efectivo:328540,  mutual:4750, bna:14545.96, cheques:0, sistema:352735.99},
+  {fecha:'2026-05-13', efectivo:653540,  mutual:4750, bna:14545.96, cheques:0, sistema:674814.24},
+  {fecha:'2026-05-20', efectivo:882560,  mutual:741880.5, bna:14545.96, cheques:0, sistema:1640950.07},
+  {fecha:'2026-05-28', efectivo:605700,  mutual:0, bna:14545.96, cheques:0, sistema:642532.26},
+  {fecha:'2026-06-29', efectivo:894960,  mutual:0, bna:0, cheques:0, sistema:69062},
+  {fecha:'2026-07-01', efectivo:1154850, mutual:0, bna:0, cheques:0, sistema:414057.12},
+  {fecha:'2026-07-14', efectivo:2968550, mutual:0, bna:0, cheques:0, sistema:null},
+  {fecha:'2026-07-21', efectivo:1542000, mutual:0, bna:0, cheques:0, sistema:1542000},
+  {fecha:'2026-07-29', efectivo:2769100, mutual:0, bna:0, cheques:0, sistema:2768345.22},
+  {fecha:'2026-08-06', efectivo:1514190, mutual:25611.61, mutualNoSuma:true, bna:4000, cheques:0, sistema:1518158.66},
+  {fecha:'2026-08-12', efectivo:1504720, mutual:0, bna:4000, cheques:0, sistema:1390542.35},
+  {fecha:'2026-09-15', efectivo:2819390, mutual:0, bna:0, cheques:0, sistema:2819390},
+  {fecha:'2026-09-21', efectivo:1454160, mutual:409600.98, bna:0, cheques:0, sistema:1863380.76,
+    conteo:{20000:60,10000:15,2000:2,1000:96,500:3,200:2,100:6,50:3,20:55,10:41}}
+].map((a,i)=>({id:'h'+i, ...a}));
+
+// ---------- utils ----------
+const $ = id => document.getElementById(id);
+const fmt = n => (n==null||isNaN(n)) ? '—' : '$ ' + Number(n).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmt0 = n => '$ ' + Math.round(n||0).toLocaleString('es-AR');
+const fmtFecha = iso => { const [y,m,d] = iso.split('-'); return `${d}/${m}/${y}`; };
+const hoyISO = () => new Date().toLocaleDateString('en-CA');
+function parseUno(s){
+  s = s.trim(); if (!s) return 0;
+  if (s.includes(',')) s = s.replace(/\./g,'').replace(',','.');
+  else if (!/^-?\d+\.\d{1,2}$/.test(s)) s = s.replace(/\./g,'');
+  const n = parseFloat(s); return isNaN(n) ? 0 : n;
+}
+function parseNum(s){ // acepta "1313050+183350" o "=301460+38000"
+  if (s==null) return 0;
+  s = String(s).replace(/\$|\s|^=/g,'');
+  if (!s) return 0;
+  return s.split('+').reduce((t,p)=>t+parseUno(p),0);
+}
+const toInput = n => (n==null||n===0) ? '' : Number(n).toLocaleString('es-AR',{maximumFractionDigits:2});
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
+
+// ---------- storage ----------
+function load(){
+  try {
+    const s = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); if (Array.isArray(s)) return s;
+    const old = JSON.parse(localStorage.getItem(OLD_KEY) || 'null');
+    if (Array.isArray(old)) return old.map(a => ({...a, mutualNoSuma: a.mutualEnCaja===false || undefined}));
+  } catch(e){}
+  return ARQUEOS_INICIALES.slice();
+}
+let arqueos = load();
+function save(){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(arqueos)); $('estadoGuardado').textContent = '✓ Guardado en este navegador'; return true; }
+  catch(e){ toast('No se pudo guardar. Descargá un backup ya.'); return false; }
+}
+save();
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{});
+let tol = (()=>{ try { const v = localStorage.getItem(TOL_KEY); return v==null ? 1000 : parseFloat(v); } catch(e){ return 1000; } })();
+let editId = null;
+
+// ---------- cálculos (igual que el Excel) ----------
+const totalConteo = c => c ? BILLETES.reduce((s,b)=>s+(c[b]||0)*b,0) : 0;
+const saldoFinal = a => (a.efectivo||0) + (a.mutualNoSuma ? 0 : (a.mutual||0)) + (a.bna||0) + (a.cheques||0);
+const difCaja = a => (a.sistema==null) ? null : saldoFinal(a) - a.sistema;
+function pill(d){
+  if (d==null) return '<span class="pill none" title="Sin saldo sistema">—</span>';
+  const cls = Math.abs(d) <= tol ? 'ok' : d > 0 ? 'warn' : 'bad';
+  return `<span class="pill ${cls}">${d>0?'+ ':''}${fmt(d)}</span>`;
+}
+
+// ---------- multiplicador ----------
+function buildMult(){
+  $('multBody').innerHTML = BILLETES.map(b =>
+    `<tr><td>$ ${b.toLocaleString('es-AR')}</td><td><input type="number" min="0" step="1" inputmode="numeric" data-b="${b}" class="cnt" aria-label="Cantidad de billetes de ${b}"></td><td id="imp${b}">$ 0</td></tr>`).join('');
+  document.querySelectorAll('.cnt').forEach(i => {
+    i.addEventListener('input', recalc);
+    i.addEventListener('keydown', e => { if (e.key==='Enter') { e.preventDefault(); const all=[...document.querySelectorAll('.cnt')]; const nx=all[all.indexOf(i)+1]; nx ? nx.focus() : $('fMutual').focus(); } });
+  });
+}
+function leerConteo(){
+  const c = {}; document.querySelectorAll('.cnt').forEach(i => { const q = parseInt(i.value)||0; if (q) c[i.dataset.b] = q; });
+  return c;
+}
+let efectivoSinConteo = null; // para arqueos viejos cargados sin multiplicador
+
+// ---------- fila de carga ----------
+function leerFila(){
+  const conteo = leerConteo();
+  const hayConteo = Object.keys(conteo).length > 0;
+  const sis = $('fSistema').value.trim();
+  const base = editId ? arqueos.find(a=>a.id===editId) : {};
+  return {
+    fecha: $('fFecha').value,
+    efectivo: hayConteo ? totalConteo(conteo) : (efectivoSinConteo ?? 0),
+    conteo: hayConteo ? conteo : null,
+    mutual: parseNum($('fMutual').value), mutualNoSuma: base && base.mutualNoSuma || undefined,
+    bna: parseNum($('fBNA').value), cheques: parseNum($('fCheques').value),
+    sistema: sis==='' ? null : parseNum(sis),
+    obs: $('fObs').value.trim()
+  };
+}
+function recalc(){
+  const c = leerConteo();
+  BILLETES.forEach(b => $('imp'+b).textContent = fmt0((c[b]||0)*b));
+  const a = leerFila();
+  $('multTotal').textContent = fmt0(totalConteo(c));
+  $('fEfectivo').textContent = fmt(a.efectivo);
+  $('fFinal').textContent = fmt(saldoFinal(a));
+  $('fDif').innerHTML = pill(difCaja(a));
+}
+function limpiar(){
+  editId = null; efectivoSinConteo = null;
+  $('fFecha').value = hoyISO();
+  ['fMutual','fBNA','fCheques','fSistema','fObs'].forEach(id => $(id).value='');
+  document.querySelectorAll('.cnt').forEach(i => i.value='');
+  $('multFecha').textContent = 'Arqueo nuevo';
+  $('btnGuardar').textContent = 'Guardar'; $('btnCancelar').style.display='none';
+  renderHist(); recalc();
+}
+function abrir(id){
+  const a = arqueos.find(x=>x.id===id); if (!a) return;
+  editId = id;
+  $('fFecha').value = a.fecha;
+  document.querySelectorAll('.cnt').forEach(i => i.value = (a.conteo && a.conteo[i.dataset.b]) || '');
+  efectivoSinConteo = (a.conteo && Object.keys(a.conteo).length) ? null : a.efectivo;
+  $('fMutual').value = toInput(a.mutual); $('fBNA').value = toInput(a.bna); $('fCheques').value = toInput(a.cheques);
+  $('fSistema').value = a.sistema==null ? '' : toInput(a.sistema);
+  $('fObs').value = a.obs || '';
+  $('multFecha').textContent = 'Arqueo del ' + fmtFecha(a.fecha) + (efectivoSinConteo!=null ? ' (cargado sin conteo de billetes)' : '');
+  $('btnCancelar').style.display='inline-block';
+  renderHist(); recalc();
+  window.scrollTo({top:0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto':'smooth'});
+}
+function guardar(){
+  const a = leerFila();
+  if (!a.fecha) { toast('Falta la fecha'); return; }
+  if (!a.efectivo && !a.mutual && !a.bna && !a.cheques) { toast('No hay importes cargados'); return; }
+  if (a.sistema==null && !confirm('No cargaste el saldo sistema. ¿Guardamos igual?')) { $('fSistema').focus(); return; }
+  const otra = arqueos.find(x => x.fecha===a.fecha && x.id!==editId);
+  if (otra && !confirm(`Ya hay un arqueo del ${fmtFecha(a.fecha)}. ¿Guardamos otro para la misma fecha?`)) return;
+  if (editId) arqueos = arqueos.map(x => x.id===editId ? {...a, id:editId} : x);
+  else arqueos.push({...a, id:'a'+Date.now()});
+  if (save()) toast(editId ? 'Cambios guardados' : 'Arqueo guardado');
+  limpiar(); chequearBackup();
+}
+function borrar(id){
+  const a = arqueos.find(x=>x.id===id);
+  if (!confirm(`¿Borrar el arqueo del ${fmtFecha(a.fecha)}? Se pierde también su saldo sistema.`)) return;
+  arqueos = arqueos.filter(x => x.id!==id); save(); limpiar(); toast('Arqueo borrado');
+}
+
+// ---------- historial ----------
+function renderHist(){
+  const o = arqueos.slice().sort((a,b)=> b.fecha.localeCompare(a.fecha));
+  $('histBody').innerHTML = o.map(a => `
+    <tr data-id="${a.id}" class="${a.id===editId?'sel':''}" title="${(a.obs||'Tocá para ver o corregir').replace(/"/g,'&quot;')}">
+      <td>${fmtFecha(a.fecha)}${a.obs?' <span class="mark">•</span>':''}</td>
+      <td class="${a.conteo?'':'sinconteo'}">${fmt(a.efectivo)}</td>
+      <td>${fmt(a.mutual)}${a.mutualNoSuma&&a.mutual?' <span class="mark" title="No suma al saldo final (como en la planilla original)">*</span>':''}</td>
+      <td>${fmt(a.bna)}</td><td>${fmt(a.cheques)}</td>
+      <td class="calc">${fmt(saldoFinal(a))}</td>
+      <td>${fmt(a.sistema)}</td>
+      <td>${pill(difCaja(a))}</td>
+      <td><button class="btn btn-danger btn-sm" data-del="${a.id}" aria-label="Borrar arqueo del ${fmtFecha(a.fecha)}">Borrar</button></td>
+    </tr>`).join('');
+}
+
+// ---------- export / backup ----------
+function descargar(nombre, contenido, tipo){
+  const blob = new Blob([contenido], {type:tipo}); const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download=nombre; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+const n2 = n => n==null ? '' : Number(n).toFixed(2).replace('.',',');
+function exportCSV(){
+  const head = ['FECHA','EFECTIVO','ADRIAN MUTUAL','BNA','CHEQUES','SALDO FINAL','SALDO SISTEMA','DIF DE CAJA','OBSERVACIONES',...BILLETES.map(b=>'Billetes $'+b)];
+  const rows = arqueos.slice().sort((a,b)=>a.fecha.localeCompare(b.fecha)).map(a => [fmtFecha(a.fecha), n2(a.efectivo), n2(a.mutual), n2(a.bna), n2(a.cheques), n2(saldoFinal(a)), n2(a.sistema), n2(difCaja(a)), '"'+(a.obs||'').replace(/"/g,'""')+'"', ...BILLETES.map(b=>(a.conteo&&a.conteo[b])||'')]);
+  descargar(`arqueos_${hoyISO()}.csv`, '\ufeff'+[head,...rows].map(r=>r.join(';')).join('\r\n'), 'text/csv;charset=utf-8');
+}
+function backup(){
+  descargar(`arqueos_backup_${hoyISO()}.json`, JSON.stringify({version:2, tolerancia:tol, arqueos}, null, 2), 'application/json');
+  try { localStorage.setItem(BACKUP_KEY, JSON.stringify({fecha:hoyISO(), cant:arqueos.length})); } catch(e){}
+  chequearBackup();
+}
+function restaurar(file){
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const d = JSON.parse(r.result); const lista = Array.isArray(d) ? d : d.arqueos;
+      if (!Array.isArray(lista)) throw 0;
+      if (!confirm(`Se reemplazan los ${arqueos.length} arqueos actuales por los ${lista.length} del backup. ¿Seguimos?`)) return;
+      arqueos = lista.map(a => ({...a, mutualNoSuma: a.mutualNoSuma || a.mutualEnCaja===false || undefined}));
+      if (d.tolerancia!=null) { tol = d.tolerancia; $('fTol').value = toInput(tol); try{localStorage.setItem(TOL_KEY,tol);}catch(e){} }
+      save(); limpiar(); toast('Backup restaurado');
+    } catch(e){ toast('El archivo no es un backup de arqueos válido'); }
+  };
+  r.readAsText(file);
+}
+function chequearBackup(){
+  let ult = null; try { ult = JSON.parse(localStorage.getItem(BACKUP_KEY)||'null'); } catch(e){}
+  const nuevos = ult ? arqueos.length - ult.cant : arqueos.length;
+  const av = $('avisoBackup');
+  if (!ult || nuevos >= 3) {
+    av.innerHTML = ult ? `Cargaste ${nuevos} arqueos desde el último backup (${fmtFecha(ult.fecha)}). <button class="btn btn-sm btn-secondary" onclick="backup()">Descargar backup</button>`
+                       : `Los arqueos se guardan solo en este navegador. Descargá un backup para no perder los saldos. <button class="btn btn-sm btn-secondary" onclick="backup()">Descargar backup</button>`;
+    av.style.display = 'block';
+  } else av.style.display = 'none';
+}
+
+// ---------- eventos ----------
+buildMult();
+['fMutual','fBNA','fCheques','fSistema','fFecha'].forEach(id => $(id).addEventListener('input', recalc));
+['fMutual','fBNA','fCheques','fSistema'].forEach(id => $(id).addEventListener('blur', e => { const v=e.target.value.trim(); if (v) e.target.value = toInput(parseNum(v)); recalc(); }));
+$('fSistema').addEventListener('keydown', e => { if (e.key==='Enter') guardar(); });
+$('fTol').value = toInput(tol);
+$('fTol').addEventListener('input', () => { tol = parseNum($('fTol').value); try{localStorage.setItem(TOL_KEY,tol);}catch(e){} renderHist(); recalc(); });
+$('btnGuardar').addEventListener('click', guardar);
+$('btnCancelar').addEventListener('click', limpiar);
+$('btnCSV').addEventListener('click', exportCSV);
+$('btnBackup').addEventListener('click', backup);
+$('btnRestore').addEventListener('click', () => $('fileRestore').click());
+$('fileRestore').addEventListener('change', e => { if (e.target.files[0]) restaurar(e.target.files[0]); e.target.value=''; });
+$('histBody').addEventListener('click', e => {
+  if (e.target.dataset.del) { e.stopPropagation(); borrar(e.target.dataset.del); return; }
+  const tr = e.target.closest('tr[data-id]'); if (tr) abrir(tr.dataset.id);
+});
+limpiar(); chequearBackup();
+</script>
+</body>
+</html>

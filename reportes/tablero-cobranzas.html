@@ -323,15 +323,7 @@ function limpiarTel(tel) {
 
 function generarMensaje(c) {
   const nom = nombreDe(c);
-  return `Hola${nom ? ' ' + nom : ''}, ¿cómo va? Te escribo de Pinturería Adrián. Estuvimos ordenando las cuentas y nos quedó un saldo pendiente tuyo de ${fmt(c.monto)}, Te dejo las opciones para el pago:
-
-EFECTIVO: cuando quieras te esperamos en el local.
-
-TRANSFERENCIA:
-Alias: *ROSSIS.REGIONAL*
-Banco: Coinag / Agilpagos
-
-Si transferís, pasame el comprobante por acá así lo dejo imputado. Si necesitás que te envíe algún comprobante o detalle de la deuda, avisame y te lo mando. ¡Gracias!`;
+  return `Hola${nom ? ' ' + nom : ''}, ¿cómo andás? Te escribo de la pinturería para ponerte al día con la cuenta: tenés un saldo de *${fmt(c.monto)}*. Podés pasar por el local o transferir al alias *ROSSIS.REGIONAL* (Coinag / Agilpagos) y me mandás el comprobante. ¡Gracias, saludos!`;
 }
 
 function abrirWsp(cliente) {

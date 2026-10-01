@@ -63,7 +63,7 @@ function detectType(path) {
   if (tiene('vence') && tiene('fecha cpte')) return 'cxc';
   if (tiene('fecha vencimiento') && tiene('detalle')) return 'cxp';
   if (tiene('fecha') && tiene('comprobante') && tiene('cv')) return 'ventas';
-  if (tiene('fecha') && tiene('comprobante') && tiene('total')) return 'cobros';
+  if (tiene('fecha') && tiene('comprobante') && tiene('cliente') && tiene('total')) return 'cobros';
   return null;
 }
 
@@ -123,17 +123,19 @@ function parseCxC(path, { corte, excluir = EXCLUIR_CXC } = {}) {
   const excluidos = clientes.filter(excluye);
   const giro = clientes.filter(c => !excluye(c) && c.total > 0);
 
-  const tramos = { '0-30': 0, '31-60': 0, '61-90': 0, '+90': 0 };
+  // "A vencer" = vencimiento posterior al corte; solo aparece si hay saldo (no es deuda atrasada)
+  const tramos = { 'A vencer': 0, '0-30': 0, '31-60': 0, '61-90': 0, '+90': 0 };
   for (const c of giro) {
     c.viejo = 0; c.maxDias = 0; // +90 por cliente y antigüedad máxima (para acciones de cobranza)
     for (const it of c.items) {
       const dias = it.vence && corte ? Math.floor((corte - it.vence) / 86400000) : 999;
-      const t = dias <= 30 ? '0-30' : dias <= 60 ? '31-60' : dias <= 90 ? '61-90' : '+90';
+      const t = dias < 0 ? 'A vencer' : dias <= 30 ? '0-30' : dias <= 60 ? '31-60' : dias <= 90 ? '61-90' : '+90';
       tramos[t] += it.importe;
       if (t === '+90') c.viejo += it.importe;
       if (dias !== 999 && dias > c.maxDias) c.maxDias = dias;
     }
   }
+  if (!tramos['A vencer']) delete tramos['A vencer'];
   const total = giro.reduce((a, c) => a + c.total, 0);
   return {
     total, deudores: giro.length,

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reporte Septiembre 2026 — Pinturería Adrián</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root { --bg:#0d0d0d; --bg2:#1a1a1a; --bg3:#262626; --text:#f5f5f5; --text2:#b3b3b3; --text3:#808080; --accent1:#ff6b9d; --accent2:#00d9ff; --green:#10b981; --red:#ef4444; --yellow:#f59e0b; --purple:#a78bfa; --border:#333; --glass:rgba(255,255,255,0.03); --glass-b:rgba(255,255,255,0.06); }
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; scroll-padding-top:84px; }
+body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); line-height:1.6; }
+body::before { content:''; position:fixed; inset:0; z-index:-1; pointer-events:none;
+  background:radial-gradient(600px 400px at 12% 8%,rgba(255,107,157,0.10),transparent 70%),radial-gradient(700px 500px at 88% 30%,rgba(0,217,255,0.09),transparent 70%),radial-gradient(600px 400px at 30% 95%,rgba(167,139,250,0.07),transparent 70%); }
+.container { max-width:1200px; margin:0 auto; padding:0 2rem; }
+header { background:rgba(13,13,13,0.8); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-bottom:1px solid var(--glass-b); position:sticky; top:0; z-index:100; padding:1rem 0; }
+header .container { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; }
+.logo { display:flex; align-items:center; gap:0.75rem; font-size:1.3rem; font-weight:600; color:var(--text); text-decoration:none; }
+nav { display:flex; gap:1.5rem; flex-wrap:wrap; }
+nav a { color:var(--text3); text-decoration:none; font-size:0.85rem; transition:color 0.2s; }
+nav a:hover { color:var(--accent2); }
+.hero { padding:3.5rem 0; border-bottom:1px solid var(--glass-b); text-align:center; }
+.hero h1 { font-size:2.5rem; font-weight:600; letter-spacing:-1px; margin-bottom:0.5rem; background:linear-gradient(135deg,var(--text),var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.hero .sub { color:var(--text2); font-size:1.1rem; font-weight:300; }
+.hero .fecha { color:var(--text3); font-size:0.9rem; margin-top:0.5rem; }
+.glass { background:var(--glass); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border:1px solid var(--glass-b); border-radius:12px; transition:border-color 0.3s, box-shadow 0.3s, transform 0.3s; }
+.glass:hover { border-color:rgba(0,217,255,0.28); box-shadow:0 0 28px rgba(0,217,255,0.10); }
+.kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1rem; margin:2rem 0; }
+.kpi { padding:1.5rem; text-align:center; }
+.kpi:hover { transform:translateY(-3px); }
+.kpi-val { font-size:1.6rem; font-weight:600; background:linear-gradient(135deg,var(--accent1),var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; font-variant-numeric:tabular-nums; }
+.kpi-label { color:var(--text3); font-size:0.8rem; margin-top:0.25rem; }
+.kpi-delta { font-size:0.75rem; margin-top:0.25rem; }
+.kpi-delta.up { color:var(--green); } .kpi-delta.down { color:var(--red); } .kpi-delta.neutral { color:var(--text3); }
+.section { padding:3rem 0; border-bottom:1px solid var(--glass-b); }
+.section h2 { font-size:1.8rem; font-weight:600; letter-spacing:-0.5px; margin-bottom:2rem; display:flex; align-items:center; gap:0.75rem; }
+.section h2 .num { color:var(--accent2); font-size:0.9rem; font-weight:500; background:rgba(0,217,255,0.1); padding:0.25rem 0.75rem; border-radius:4px; }
+.ico { width:26px; height:26px; color:var(--accent2); flex:none; }
+.table-wrap { overflow-x:auto; margin:1.5rem 0; }
+table { width:100%; border-collapse:collapse; font-size:0.9rem; }
+th { background:rgba(255,255,255,0.04); color:var(--text2); text-align:left; padding:0.75rem 1rem; font-weight:500; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.5px; }
+td { padding:0.75rem 1rem; border-bottom:1px solid var(--glass-b); }
+tr:hover td { background:rgba(255,255,255,0.02); }
+.text-right { text-align:right; }
+.mono { font-family:'SF Mono','Fira Code',monospace; font-size:0.85rem; }
+.card { padding:1.5rem; }
+.card h3 { font-size:1.1rem; font-weight:600; margin-bottom:1rem; }
+.cards-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:1.5rem; }
+.badge { display:inline-block; padding:0.2rem 0.6rem; border-radius:4px; font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; }
+.badge-green { background:rgba(16,185,129,0.15); color:var(--green); }
+.badge-red { background:rgba(239,68,68,0.15); color:var(--red); }
+.badge-yellow { background:rgba(245,158,11,0.15); color:var(--yellow); }
+.chart-container { position:relative; max-width:350px; margin:1rem auto; }
+.chart-wide { position:relative; max-width:760px; margin:2rem auto 0; padding:1.25rem; }
+.highlight-box, .warning-box { border-radius:12px; padding:1.5rem; margin:1.5rem 0; backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); }
+.highlight-box { background:linear-gradient(135deg,rgba(16,185,129,0.08),rgba(0,217,255,0.08)); border:1px solid rgba(16,185,129,0.3); }
+.highlight-box h4 { color:var(--green); font-size:1rem; margin-bottom:0.5rem; }
+.warning-box { background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.22); }
+.warning-box h4 { color:var(--red); font-size:1rem; margin-bottom:0.5rem; }
+.highlight-box p, .warning-box p { color:var(--text2); font-size:0.95rem; }
+.action { background:var(--glass); border:1px solid var(--glass-b); border-left:3px solid var(--accent2); padding:1rem 1.5rem; margin:1rem 0; border-radius:0 10px 10px 0; }
+.action h4 { color:var(--accent2); font-size:0.95rem; margin-bottom:0.25rem; }
+.action p { color:var(--text2); font-size:0.9rem; }
+.progress-bar { background:rgba(255,255,255,0.06); border-radius:6px; height:8px; overflow:hidden; margin:0.5rem 0; }
+.progress-fill { height:100%; width:0; border-radius:6px; transition:width 0.8s cubic-bezier(0.22,1,0.36,1); }
+.spark { display:block; margin-left:auto; }
+.heat { border-radius:6px; }
+.narr { margin:0 0 1.5rem; }
+.narr p { color:var(--text2); font-size:0.95rem; margin-bottom:0.6rem; }
+.narr p:last-child { margin-bottom:0; }
+.narr strong { color:var(--text); font-weight:600; }
+.narr .frase { color:var(--text); font-size:1.25rem; font-weight:500; line-height:1.4; margin-bottom:1rem; }
+.narr ul { margin:0 0 0 1.25rem; color:var(--text2); font-size:0.95rem; }
+.narr li { margin-bottom:0.35rem; }
+.narr li.urgente { color:var(--red); }
+.action .monto { color:var(--text3); font-size:0.8rem; margin-top:0.35rem; }
+.action .monto strong { color:var(--text); }
+.note { color:var(--text3); font-size:0.85rem; margin-top:1rem; }
+footer { padding:2rem 0; text-align:center; }
+footer p { color:var(--text3); font-size:0.8rem; margin-bottom:0.25rem; }
+.mini { display:flex; flex-wrap:wrap; justify-content:center; gap:0.5rem 1.5rem; margin-bottom:1rem; padding:0.75rem 1.25rem; border-radius:999px; font-size:0.85rem; color:var(--text2); }
+.mini b { color:var(--text); font-weight:600; font-variant-numeric:tabular-nums; }
+.mini span.neg b { color:var(--red); }
+@media (max-width:768px) { .hero h1{font-size:1.8rem;} .container{padding:0 1rem;} .kpi-grid{grid-template-columns:repeat(2,1fr);} .mini{border-radius:12px;} }
+@media (prefers-reduced-motion:reduce) { html{scroll-behavior:auto;} .progress-fill{transition:none;} }
+</style>
+</head>
+<body>
+<header><div class="container"><a href="../" class="logo">Pinturería Adrián</a><nav><a href="#resumen">Resumen</a><a href="#evolucion">Evolución</a><a href="#flujo">Flujo</a><a href="#cobranzas">Nos deben</a><a href="#cxp">Debemos</a><a href="#ventas">Ventas</a><a href="#retiros">Retiros</a><a href="#plan">Plan</a><a href="#control">Control</a></nav></div></header>
+<section class="hero"><div class="container">
+<h1>Reporte Ejecutivo — Septiembre 2026</h1>
+<p class="sub">Análisis financiero, cobranzas y gestión operativa</p>
+<p class="fecha">Período: 1 al 30 de septiembre de 2026 • Generado: octubre 2026</p>
+</div></section>
+<main><section class="section" id="resumen"><div class="container"><h2><span class="num">01</span><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg> Resumen del Mes</h2><div class="kpi-grid"><div class="kpi glass"><div class="kpi-val" data-count="9957397" data-fmt="money">$9.96M</div><div class="kpi-label">Ventas Netas</div><div class="kpi-delta down">-27% vs agosto ($13.61M)</div></div><div class="kpi glass"><div class="kpi-val" data-count="100" data-fmt="int">100</div><div class="kpi-label">Facturas Emitidas</div><div class="kpi-delta neutral">&nbsp;</div></div><div class="kpi glass"><div class="kpi-val" data-count="99574" data-fmt="money">$99.6K</div><div class="kpi-label">Ticket Promedio</div><div class="kpi-delta neutral">&nbsp;</div></div><div class="kpi glass"><div class="kpi-val" data-count="7318400" data-fmt="money">$7.32M</div><div class="kpi-label">Cobros del Mes</div><div class="kpi-delta neutral">ratio 0.73x sobre ventas</div></div><div class="kpi glass"><div class="kpi-val" data-count="15195298" data-fmt="money">$15.20M</div><div class="kpi-label">Nos deben (CxC)</div><div class="kpi-delta down">+96% vs agosto ($7.74M)</div></div><div class="kpi glass"><div class="kpi-val" data-count="7514520" data-fmt="money">$7.51M</div><div class="kpi-label">Debemos (CxP)</div><div class="kpi-delta down">+520% vs agosto ($1.21M)</div></div></div><div class="card glass narr"><p class="frase">Septiembre fue un mes flojo en ventas y la caja quedó justa.</p><ul><li>Ventas abajo respecto de agosto — un cambio grande, vale entender la causa.</li><li>Cobramos bastante menos de lo que vendimos: estamos financiando a los clientes.</li><li>La caja del mes cerró con saldo a favor.</li><li>La deuda vieja de clientes está dentro de lo habitual del rubro.</li></ul></div></div></section>
+<section class="section" id="evolucion"><div class="container"><h2><span class="num">02</span><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M2 20h20"/></svg> Evolución Julio → Agosto → Septiembre</h2>
+<div class="table-wrap glass"><table>
+<thead><tr><th>Indicador</th><th class="text-right">Julio</th><th class="text-right">Agosto</th><th class="text-right">Septiembre</th><th class="text-right">Tendencia</th><th class="text-right">Último mes</th></tr></thead>
+<tbody><tr><td>Ventas netas</td><td class="text-right mono">$10.712.817</td><td class="text-right mono">$13.606.350</td><td class="text-right mono">$9.957.397</td><td><svg class="spark" width="80" height="24" viewBox="0 0 80 24" aria-hidden="true"><polyline points="3.0,17.3 40.0,3.0 77.0,21.0" fill="none" stroke="var(--red)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><circle cx="77.0" cy="21.0" r="2.5" fill="var(--red)"/></svg></td><td class="text-right"><span class="badge badge-red">-27%</span></td></tr><tr><td>Lo que nos deben (CxC)</td><td class="text-right mono">$10.544.695</td><td class="text-right mono">$7.741.708</td><td class="text-right mono">$15.195.298</td><td><svg class="spark" width="80" height="24" viewBox="0 0 80 24" aria-hidden="true"><polyline points="3.0,14.2 40.0,21.0 77.0,3.0" fill="none" stroke="var(--red)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><circle cx="77.0" cy="3.0" r="2.5" fill="var(--red)"/></svg></td><td class="text-right"><span class="badge badge-red">+96%</span></td></tr><tr><td>Lo que debemos (CxP)</td><td class="text-right mono">$4.949.327</td><td class="text-right mono">$1.212.397</td><td class="text-right mono">$7.514.520</td><td><svg class="spark" width="80" height="24" viewBox="0 0 80 24" aria-hidden="true"><polyline points="3.0,10.3 40.0,21.0 77.0,3.0" fill="none" stroke="var(--red)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><circle cx="77.0" cy="3.0" r="2.5" fill="var(--red)"/></svg></td><td class="text-right"><span class="badge badge-red">+520%</span></td></tr></tbody></table></div>
+<div class="chart-wide glass"><canvas id="chartEvolucion"></canvas></div></div></section>
+<section class="section" id="flujo"><div class="container"><h2><span class="num">03</span><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h15m0 0-4-4m4 4-4 4M20 16H5m0 0 4-4m-4 4 4 4"/></svg> Flujo de Caja</h2><div class="card glass narr"><p>Entró <strong>$7.8M</strong>, salió <strong>$7.7M</strong>, quedó <strong>$94K</strong>.</p><p>Lo que más pesó en los egresos: ACREEDORES VARIOS (43.1%), RETIRO MARTIN (33.0%), SUELDOS Y JORNALES (13.0%).</p></div>
+<div class="card glass" style="margin-bottom:1.5rem;"><h3>Ventas vs Cobros</h3>
+<div class="cards-grid" style="align-items:center;">
+  <div><table>
+    <tr><td>Ventas del mes</td><td class="text-right mono">$9.957.397</td></tr>
+    <tr><td>Cobros del mes</td><td class="text-right mono">$7.318.400</td></tr>
+    <tr><td>Diferencia (cobros − ventas)</td><td class="text-right mono" style="color:var(--yellow);">-$2.638.998</td></tr>
+    <tr style="border-top:2px solid var(--border);"><td><strong>Ratio cobros/ventas</strong></td><td class="text-right mono" style="color:var(--yellow);"><strong>0.73x</strong></td></tr>
+  </table>
+  <p class="note" style="color:var(--yellow);">Vendimos más de lo que cobramos — lo que nos deben crece</p></div>
+  <div><canvas id="chartVC" height="140"></canvas></div>
+</div></div>
+<div class="cards-grid">
+  <div class="card glass"><h3>Movimiento de Caja</h3><table>
+    <tr><td>Ingreso Caja Pesos</td><td class="text-right mono" style="color:var(--green);">$7.773.459</td></tr>
+    <tr><td>Egreso Total</td><td class="text-right mono" style="color:var(--red);">-$7.678.980</td></tr>
+    <tr style="border-top:2px solid var(--border);"><td><strong>Saldo en Caja</strong></td><td class="text-right mono" style="color:var(--green);"><strong>$94.479</strong></td></tr>
+  </table></div>
+  <div class="card glass"><h3>Distribución de Egresos</h3><div class="chart-container"><canvas id="chartEgresos"></canvas></div></div>
+</div>
+<div class="table-wrap glass"><table>
+<thead><tr><th>Concepto</th><th class="text-right">Monto</th><th class="text-right">% del Egreso</th></tr></thead>
+<tbody><tr><td>ACREEDORES VARIOS</td><td class="text-right mono">$3.306.885</td><td class="text-right">43.1%</td></tr><tr><td>RETIRO MARTIN</td><td class="text-right mono">$2.535.818</td><td class="text-right">33.0%</td></tr><tr><td>SUELDOS Y JORNALES</td><td class="text-right mono">$1.000.000</td><td class="text-right">13.0%</td></tr><tr><td>RETIRO ADRIAN</td><td class="text-right mono">$636.277</td><td class="text-right">8.3%</td></tr><tr><td>IMPUESTOS NACIONALES</td><td class="text-right mono">$143.000</td><td class="text-right">1.9%</td></tr><tr><td>FLETES POR COMPRAS</td><td class="text-right mono">$57.000</td><td class="text-right">0.7%</td></tr></tbody>
+</table></div></div></section>
+<section class="section" id="cobranzas"><div class="container"><h2><span class="num">04</span><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h12v4"/><path d="M3 7v10a2 2 0 0 0 2 2h14a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1H5a2 2 0 0 1-2-1"/><circle cx="16.5" cy="13.5" r="1"/></svg> Lo que nos deben (CxC) y Cobranzas</h2>
+<div class="card glass narr"><p>Por cada peso que vendimos, cobramos <strong>$0.73</strong>. Estamos financiando a los clientes — la deuda crece. Estamos financiando bastante: conviene vigilarlo.</p><p>De los <strong>$15.2M</strong> que nos deben, $4.7M tienen más de 3 meses (31.0%) — esa es la deuda difícil. Es una proporción normal para el rubro.</p><p>Los 10 que más nos deben concentran el 45.6% de la deuda.</p></div>
+<div class="cards-grid">
+  <div class="card glass"><h3>Lo que nos deben (giro normal)</h3>
+    <div style="text-align:center;margin:1rem 0;"><div style="font-size:2rem;font-weight:600;color:var(--accent2);">$15.195.298</div>
+    <div style="color:var(--text3);">104 deudores activos</div></div>
+    <p class="note">Excluidos del giro normal: CUENCA NELSON, GARAY ADRIAN ($6.791.928).</p>
+  </div>
+  <div class="card glass"><h3>Antigüedad de lo que nos deben</h3><div class="chart-container"><canvas id="chartAging"></canvas></div></div>
+</div>
+<div class="table-wrap glass"><table>
+<thead><tr><th>Tramo</th><th class="text-right">Monto</th><th class="text-right">%</th><th>Barra</th></tr></thead>
+<tbody>
+<tr><td><span class="badge badge-green">A vencer</span></td><td class="text-right mono">$6.697.202</td><td class="text-right">44.1%</td>
+<td style="min-width:140px;"><div class="progress-bar"><div class="progress-fill" data-w="44.1" style="background:var(--green);"></div></div></td></tr>
+<tr><td><span class="badge badge-yellow">0-30 días</span></td><td class="text-right mono">$1.938.184</td><td class="text-right">12.8%</td>
+<td style="min-width:140px;"><div class="progress-bar"><div class="progress-fill" data-w="12.8" style="background:var(--yellow);"></div></div></td></tr>
+<tr><td><span class="badge badge-yellow">31-60 días</span></td><td class="text-right mono">$1.840.947</td><td class="text-right">12.1%</td>
+<td style="min-width:140px;"><div class="progress-bar"><div class="progress-fill" data-w="12.1" style="background:var(--yellow);"></div></div></td></tr>
+<tr><td><span class="badge badge-red">61-90 días</span></td><td class="text-right mono">$8.985</td><td class="text-right">0.1%</td>
+<td style="min-width:140px;"><div class="progress-bar"><div class="progress-fill" data-w="0.5" style="background:var(--red);"></div></div></td></tr>
+<tr><td><span class="badge badge-red">+90 días</span></td><td class="text-right mono">$4.709.980</td><td class="text-right">31.0%</td>
+<td style="min-width:140px;"><div class="progress-bar"><div class="progress-fill" data-w="31.0" style="background:var(--red);"></div></div></td></tr></tbody></table></div>
+<h3 style="margin:2rem 0 1rem;">Top 10 Deudores</h3><div class="glass">
+<div class="table-wrap"><table>
+<thead><tr><th>#</th><th>Cliente</th><th class="text-right">Deuda</th><th class="text-right">%</th></tr></thead>
+<tbody><tr><td>1</td><td>ESCUELA Nº 6021 GRAL JOSE DE SAN MARTIN</td><td class="text-right mono heat" style="background:hsla(0,70%,45%,0.22);">$1.056.543</td><td class="text-right">7.0%</td></tr><tr><td>2</td><td>ASOCIACION RENACIMIENTO</td><td class="text-right mono heat" style="background:hsla(2,70%,45%,0.22);">$1.040.475</td><td class="text-right">6.8%</td></tr><tr><td>3</td><td>ANDERMATTEN CARLOS</td><td class="text-right mono heat" style="background:hsla(25,70%,45%,0.22);">$870.880</td><td class="text-right">5.7%</td></tr><tr><td>4</td><td>PINOTTI ADRIAN</td><td class="text-right mono heat" style="background:hsla(39,70%,45%,0.22);">$765.664</td><td class="text-right">5.0%</td></tr><tr><td>5</td><td>MARCHETTI HECTOR</td><td class="text-right mono heat" style="background:hsla(42,70%,45%,0.22);">$742.711</td><td class="text-right">4.9%</td></tr><tr><td>6</td><td>MONDINO NATALIA</td><td class="text-right mono heat" style="background:hsla(52,70%,45%,0.22);">$663.982</td><td class="text-right">4.4%</td></tr><tr><td>7</td><td>RAMALLO MARTIN</td><td class="text-right mono heat" style="background:hsla(55,70%,45%,0.22);">$641.639</td><td class="text-right">4.2%</td></tr><tr><td>8</td><td>FRANCO SERGIO ORLANDO</td><td class="text-right mono heat" style="background:hsla(86,70%,45%,0.22);">$408.062</td><td class="text-right">2.7%</td></tr><tr><td>9</td><td>C.C.Y DEP.RAMONA</td><td class="text-right mono heat" style="background:hsla(87,70%,45%,0.22);">$403.620</td><td class="text-right">2.7%</td></tr><tr><td>10</td><td>SABOLO MIGUEL</td><td class="text-right mono heat" style="background:hsla(95,70%,45%,0.22);">$343.025</td><td class="text-right">2.3%</td></tr></tbody>
+<tfoot><tr style="border-top:2px solid var(--border);"><td colspan="2"><strong>Top 10</strong></td><td class="text-right mono"><strong>$6.936.602</strong></td><td class="text-right"><strong>45.6%</strong></td></tr></tfoot>
+</table></div></div></div></section>
+<section class="section" id="cxp"><div class="container"><h2><span class="num">05</span><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg> Lo que debemos (CxP)</h2>
+<div class="card glass narr"><p>Le debemos <strong>$7.5M</strong> a 4 proveedores.</p><p>El más grande es PINTURERIA ARIEL: $5.1M (67.2%).</p><p>RAMALLO MARTIN también figura entre quienes nos deben ($642K): en neto le debemos $571K.</p><p>Con Pinturería Ariel tenemos un saldo de $5.1M (67.2% de lo que debemos).</p></div>
+<div class="card glass" style="max-width:600px;"><h3>Lo que debemos (total)</h3>
+<div style="text-align:center;margin:1rem 0;"><div style="font-size:2rem;font-weight:600;color:var(--accent1);">$7.514.520</div>
+<div style="color:var(--text3);">4 proveedores</div></div>
+<table><thead><tr><th>Proveedor</th><th class="text-right">Deuda</th><th class="text-right">%</th></tr></thead>
+<tbody><tr><td>PINTURERIA ARIEL</td><td class="text-right mono">$5.050.605</td><td class="text-right">67.2%</td></tr><tr><td>RAMALLO MARTIN</td><td class="text-right mono">$1.212.397</td><td class="text-right">16.1%</td></tr><tr><td>ROBERTO BOETTO</td><td class="text-right mono">$1.079.519</td><td class="text-right">14.4%</td></tr><tr><td>SCAGLIA MARIANO</td><td class="text-right mono">$172.000</td><td class="text-right">2.3%</td></tr></tbody></table></div></div></section>
+<section class="section" id="ventas"><div class="container"><h2><span class="num">06</span><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg> Ventas</h2>
+<div class="card glass narr"><p>Vendimos <strong>$10.0M</strong> en 100 facturas — un ticket promedio de <strong>$100K</strong>.</p><p>Contra agosto ($13.6M) es -27%: un movimiento atípico, conviene revisar si lo explica un cliente grande o la estacionalidad.</p></div>
+<div class="cards-grid">
+  <div class="card glass"><h3>Top 10 Clientes por Ventas</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>#</th><th>Cliente</th><th class="text-right">Importe</th><th class="text-right">%</th></tr></thead>
+<tbody><tr><td>1</td><td>ESCUELA Nº 6021 GRAL JOSE DE SAN MARTIN</td><td class="text-right mono">$1.056.543</td><td class="text-right">10.6%</td></tr><tr><td>2</td><td>ASOCIACION RENACIMIENTO</td><td class="text-right mono">$1.040.475</td><td class="text-right">10.4%</td></tr><tr><td>3</td><td>ANDERMATTEN CARLOS</td><td class="text-right mono">$870.880</td><td class="text-right">8.7%</td></tr><tr><td>4</td><td>PINOTTI ADRIAN</td><td class="text-right mono">$796.464</td><td class="text-right">8.0%</td></tr><tr><td>5</td><td>FRAIRE GUILLERMO</td><td class="text-right mono">$482.019</td><td class="text-right">4.8%</td></tr><tr><td>6</td><td>VIANCO YANINA</td><td class="text-right mono">$387.317</td><td class="text-right">3.9%</td></tr><tr><td>7</td><td>MUTUAL REGIONAL CCYD RAMONA</td><td class="text-right mono">$330.628</td><td class="text-right">3.3%</td></tr><tr><td>8</td><td>IGLESIA RAMON</td><td class="text-right mono">$322.985</td><td class="text-right">3.2%</td></tr><tr><td>9</td><td>SABOLO MIGUEL</td><td class="text-right mono">$291.713</td><td class="text-right">2.9%</td></tr><tr><td>10</td><td>POLIOTTO GASTON</td><td class="text-right mono">$291.690</td><td class="text-right">2.9%</td></tr></tbody>
+<tfoot><tr style="border-top:2px solid var(--border);"><td colspan="2"><strong>Top 10</strong></td><td class="text-right mono"><strong>$5.870.714</strong></td><td class="text-right"><strong>59.0%</strong></td></tr></tfoot>
+</table></div>
+    <p class="note">Los top 10 concentran el 59.0% de las ventas.</p></div>
+  <div class="card glass"><h3>Indicadores de Ventas</h3><table>
+    <tr><td>Ventas totales</td><td class="text-right mono">$9.957.397</td></tr>
+    <tr><td>Facturas emitidas</td><td class="text-right mono">100</td></tr>
+    <tr><td>Ticket promedio</td><td class="text-right mono">$99.574</td></tr>
+    <tr><td>Clientes que compraron</td><td class="text-right mono">58</td></tr>
+    <tr><td>Top 1 concentración</td><td class="text-right mono">10.6%</td></tr>
+    <tr><td>Top 10 concentración</td><td class="text-right mono">59.0%</td></tr>
+  </table></div>
+</div></div></section>
+<section class="section" id="retiros"><div class="container"><h2><span class="num">07</span><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M2 21v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1"/><path d="M17 11h6"/></svg> Retiros de Socios y Préstamos</h2><div class="card glass narr"><p>Los retiros y préstamos de socios suman <strong>$3.2M</strong> en bruto.</p><p>Restando el sobrante de caja ($455K), el retiro neto de Adrián es <strong>$181K</strong> (bruto $636K).</p><p>Representan el 41.3% de los egresos del mes.</p></div>
+<div class="card glass" style="max-width:600px;margin-bottom:1.5rem;"><h3>Retiro neto Adrián</h3>
+<div style="text-align:center;margin:1rem 0 1.5rem;"><div style="font-size:2rem;font-weight:600;color:var(--accent2);">$181.218</div>
+<div style="color:var(--text3);font-size:0.85rem;">retiro neto real</div></div>
+<table>
+<tr><td>Retiro bruto Adrián</td><td class="text-right mono">$636.277</td></tr>
+<tr><td>Sobrante de caja</td><td class="text-right mono" style="color:var(--green);">-$455.059</td></tr>
+<tr style="border-top:2px solid var(--border);"><td><strong>Retiro neto Adrián</strong></td><td class="text-right mono"><strong>$181.218</strong></td></tr>
+</table></div>
+<div class="card glass" style="max-width:600px;"><table>
+<thead><tr><th>Concepto</th><th class="text-right">Monto</th><th class="text-right">% Egresos</th></tr></thead>
+<tbody><tr><td>RETIRO MARTIN</td><td class="text-right mono">$2.535.818</td><td class="text-right">33.0%</td></tr><tr><td>RETIRO ADRIAN</td><td class="text-right mono">$636.277</td><td class="text-right">8.3%</td></tr></tbody>
+<tfoot><tr style="border-top:2px solid var(--border);"><td><strong>Total</strong></td><td class="text-right mono"><strong>$3.172.095</strong></td><td class="text-right"><strong>41.3%</strong></td></tr></tfoot>
+</table></div></div></section>
+<section class="section" id="plan"><div class="container"><h2><span class="num">08</span><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg> Alertas y acciones — Octubre 2026</h2><div class="action"><h4>1. Cobrar lo reciente antes de que envejezca</h4><p>Cobramos $0.73 por cada peso vendido. Hacer seguimiento a lo que tiene hasta 60 días para que no pase a deuda difícil.</p><p class="monto">En juego: <strong>$3.8M</strong></p></div><div class="action"><h4>2. Cobrar la deuda vieja más grande</h4><p>Contactar a MONDINO NATALIA ($664K, hace 7 meses), RAMALLO MARTIN ($642K, hace 32 meses), OVENA JORGE ($480K, hace 7 meses). Son los que más pesan dentro de los $4.7M con más de 3 meses. Usar el tablero de cobranzas con WhatsApp.</p><p class="monto">En juego: <strong>$1.8M</strong></p></div><div class="action"><h4>3. Compensar con RAMALLO MARTIN</h4><p>Le debemos $1.2M y nos debe $642K: se puede cruzar y pagar solo la diferencia.</p><p class="monto">En juego: <strong>$642K</strong></p></div></div></section>
+<section class="section" id="control"><div class="container"><h2><span class="num">09</span><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg> Control de Datos</h2>
+<div class="table-wrap glass"><table>
+<thead><tr><th>Archivo</th><th class="text-right">Suma calculada</th><th class="text-right">Subtotal del CSV</th><th>Estado</th></tr></thead>
+<tbody><tr><td>Ventas</td><td class="text-right mono">$9.957.397</td><td class="text-right mono">$9.957.397</td><td><span class="badge badge-green">OK</span></td></tr><tr><td>Cobros</td><td class="text-right mono">$7.318.400</td><td class="text-right mono">$7.318.400</td><td><span class="badge badge-green">OK</span></td></tr><tr><td>CxC (todos los clientes)</td><td class="text-right mono">$21.868.858</td><td class="text-right mono">$21.868.858</td><td><span class="badge badge-green">OK</span></td></tr><tr><td>CxP</td><td class="text-right mono">$7.514.520</td><td class="text-right mono">$7.514.520</td><td><span class="badge badge-green">OK</span></td></tr><tr><td>Asiento resumen (Debe)</td><td class="text-right mono">$15.452.439</td><td class="text-right mono">$15.452.439</td><td><span class="badge badge-green">OK</span></td></tr><tr><td>Ranking clientes</td><td class="text-right mono">$9.957.397</td><td class="text-right mono">$9.957.397</td><td><span class="badge badge-green">OK</span></td></tr></tbody>
+</table></div></div></section></main>
+<footer><div class="container"><div class="mini glass"><span>Ventas <b>$9.96M</b></span><span>Cobros <b>$7.32M</b></span><span>CxC <b>$15.20M</b></span><span class="">Caja <b>$94.5K</b></span></div><p><strong>Pinturería Adrián</strong> — Reporte Ejecutivo Septiembre 2026</p><p>Ramona, Santa Fe — Datos procesados desde Infocor GV6</p></div></footer>
+<script>
+(function () {
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // 1. Countup de KPIs (requestAnimationFrame, easeOutCubic, 1.5s)
+  function fmt(n, t) {
+    if (t === 'int') return String(Math.round(n));
+    var a = Math.abs(n), s = n < 0 ? '-' : '';
+    if (a >= 1e6) return s + '$' + (a / 1e6).toFixed(2) + 'M';
+    if (a >= 1e3) return s + '$' + (a / 1e3).toFixed(1) + 'K';
+    return s + '$' + Math.round(a);
+  }
+  document.querySelectorAll('[data-count]').forEach(function (el) {
+    var fin = +el.dataset.count, t = el.dataset.fmt;
+    if (reduce) return;
+    var t0 = null;
+    el.textContent = fmt(0, t);
+    (function paso(ts) {
+      if (t0 === null) t0 = ts;
+      var p = Math.min((ts - t0) / 1500, 1), e = 1 - Math.pow(1 - p, 3);
+      el.textContent = fmt(fin * e, t);
+      if (p < 1) requestAnimationFrame(paso); else el.textContent = fmt(fin, t);
+    })(performance.now());
+  });
+
+  // 6. Barras del aging: se llenan al entrar en viewport
+  var barras = document.querySelectorAll('.progress-fill[data-w]');
+  function llenar(el) { el.style.width = el.dataset.w + '%'; }
+  if ('IntersectionObserver' in window && !reduce) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { llenar(e.target.firstElementChild); io.unobserve(e.target); } });
+    }, { threshold: 0.5 });
+    barras.forEach(function (b) { io.observe(b.parentElement); });
+  } else barras.forEach(llenar);
+
+  // Gráficos
+  if (!window.Chart) return;
+  var leg = { position: 'bottom', labels: { color: '#b3b3b3', font: { family: 'Inter', size: 11 }, padding: 12 } };
+  function dona(id, labels, data, colors) {
+    new Chart(document.getElementById(id), {
+      type: 'doughnut',
+      data: { labels: labels, datasets: [{ data: data, backgroundColor: colors, borderColor: '#14141a', borderWidth: 2 }] },
+      options: { responsive: true, cutout: '60%', plugins: { legend: leg, tooltip: { callbacks: { label: function (c) {
+        var t = c.dataset.data.reduce(function (a, b) { return a + b; }, 0);
+        return c.label + ': $' + (c.raw / 1e6).toFixed(2) + 'M (' + (c.raw / t * 100).toFixed(1) + '%)'; } } } } }
+    });
+  }
+  dona('chartEgresos', ["ACREEDORES VARIOS","RETIRO MARTIN","SUELDOS Y JORNALES","RETIRO ADRIAN","IMPUESTOS NACIONALES","FLETES POR COMPRAS"], [3306885,2535818,1000000,636277,143000,57000],
+    ['#00d9ff','#f59e0b','#a78bfa','#ff6b9d','#10b981','#ef4444','#808080','#f97316','#38bdf8','#e879f9']);
+  dona('chartAging', ["A vencer","0-30d","31-60d","61-90d","+90d"], [6697202,1938184,1840947,8985,4709980],
+    ["#10b981","#f59e0b","#f97316","#ef4444","#dc2626"]);
+
+  // Ventas vs cobros: barras horizontales
+  new Chart(document.getElementById('chartVC'), {
+    type: 'bar',
+    data: { labels: ['Ventas', 'Cobros'], datasets: [{ data: [9957397, 7318400],
+      backgroundColor: ['rgba(0,217,255,0.75)', 'rgba(245,158,11,0.75)'], borderRadius: 6 }] },
+    options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false },
+      tooltip: { callbacks: { label: function (c) { return '$' + (c.raw / 1e6).toFixed(2) + 'M'; } } } },
+      scales: { x: { beginAtZero: true, ticks: { color: '#808080', callback: function (v) { return '$' + (v / 1e6).toFixed(0) + 'M'; } }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        y: { ticks: { color: '#b3b3b3' }, grid: { display: false } } } }
+  });
+
+  // 3. Evolución: áreas con gradiente transparente bajo la línea
+  var ev = document.getElementById('chartEvolucion');
+  if (ev) {
+    function area(rgb) {
+      return function (ctx) {
+        var a = ctx.chart.chartArea;
+        if (!a) return 'rgba(' + rgb + ',0.15)';
+        var g = ctx.chart.ctx.createLinearGradient(0, a.top, 0, a.bottom);
+        g.addColorStop(0, 'rgba(' + rgb + ',0.38)'); g.addColorStop(1, 'rgba(' + rgb + ',0)');
+        return g;
+      };
+    }
+    function ds(label, data, rgb) {
+      return { label: label, data: data, fill: true, tension: 0.4, borderWidth: 2, spanGaps: true,
+        borderColor: 'rgb(' + rgb + ')', backgroundColor: area(rgb),
+        pointBackgroundColor: 'rgb(' + rgb + ')', pointRadius: 4, pointHoverRadius: 6 };
+    }
+    var S = {"meses":["Julio","Agosto","Septiembre"],"ventas":[10712817,13606350.22,9957397.359999998],"cxc":[10544695,7741707.6,15195298.330000006],"cxp":[4949327,1212396.79,7514520.25]};
+    var sets = [];
+    if (S.ventas.some(function (v) { return v != null; })) sets.push(ds('Ventas', S.ventas, '0,217,255'));
+    if (S.cxc.some(function (v) { return v != null; })) sets.push(ds('CxC', S.cxc, '255,107,157'));
+    if (S.cxp.some(function (v) { return v != null; })) sets.push(ds('CxP', S.cxp, '167,139,250'));
+    new Chart(ev, {
+      type: 'line', data: { labels: S.meses, datasets: sets },
+      options: { responsive: true, interaction: { mode: 'index', intersect: false },
+        plugins: { legend: { labels: { color: '#b3b3b3', font: { family: 'Inter' } } },
+          tooltip: { callbacks: { label: function (c) { return c.dataset.label + ': $' + (c.raw / 1e6).toFixed(2) + 'M'; } } } },
+        scales: { x: { ticks: { color: '#808080' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+          y: { beginAtZero: true, ticks: { color: '#808080', callback: function (v) { return '$' + (v / 1e6).toFixed(0) + 'M'; } }, grid: { color: 'rgba(255,255,255,0.05)' } } } }
+    });
+  }
+})();
+</script>
+</body>
+</html>

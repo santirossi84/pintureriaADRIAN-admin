@@ -152,8 +152,10 @@ footer p { color:var(--text3); font-size:0.8rem; margin-bottom:0.25rem; }
 @media (prefers-reduced-motion:reduce) { html{scroll-behavior:auto;} .progress-fill{transition:none;} }
 `;
 
-const TRAMO_COLOR = { '0-30': 'var(--yellow)', '31-60': 'var(--yellow)', '61-90': 'var(--red)', '+90': 'var(--red)' };
-const TRAMO_BADGE = { '0-30': 'badge-yellow', '31-60': 'badge-yellow', '61-90': 'badge-red', '+90': 'badge-red' };
+const TRAMO_COLOR = { 'A vencer': 'var(--green)', '0-30': 'var(--yellow)', '31-60': 'var(--yellow)', '61-90': 'var(--red)', '+90': 'var(--red)' };
+const TRAMO_BADGE = { 'A vencer': 'badge-green', '0-30': 'badge-yellow', '31-60': 'badge-yellow', '61-90': 'badge-red', '+90': 'badge-red' };
+const TRAMO_HEX = { 'A vencer': '#10b981', '0-30': '#f59e0b', '31-60': '#f97316', '61-90': '#ef4444', '+90': '#dc2626' };
+const tramoLabel = t => (t === 'A vencer' ? t : `${t} días`);
 
 const topTabla = (filas, total, colTotal, { heatmap = false } = {}) => {
   const maxPct = Math.max(...filas.map(f => pct(f.monto, total)), 0.0001);
@@ -362,7 +364,7 @@ function generarHtml(d) {
 </table></div>`);
 
   const tramosHtml = Object.entries(aging).map(([t, m]) => `
-<tr><td><span class="badge ${TRAMO_BADGE[t]}">${t} días</span></td><td class="text-right mono">${peso(m)}</td><td class="text-right">${pct1(pct(m, cxc.total))}</td>
+<tr><td><span class="badge ${TRAMO_BADGE[t]}">${tramoLabel(t)}</span></td><td class="text-right mono">${peso(m)}</td><td class="text-right">${pct1(pct(m, cxc.total))}</td>
 <td style="min-width:140px;"><div class="progress-bar"><div class="progress-fill" data-w="${Math.max(pct(m, cxc.total), 0.5).toFixed(1)}" style="background:${TRAMO_COLOR[t]};"></div></div></td></tr>`).join('');
 
   add('cobranzas', 'Nos deben', 'cobranzas', 'Lo que nos deben (CxC) y Cobranzas', `
@@ -511,8 +513,8 @@ ${narr(narrVentas)}
   }
   dona('chartEgresos', ${JSON.stringify(asiento.egresos.map(e => e.nombre))}, ${JSON.stringify(asiento.egresos.map(e => Math.round(e.monto)))},
     ['#00d9ff','#f59e0b','#a78bfa','#ff6b9d','#10b981','#ef4444','#808080','#f97316','#38bdf8','#e879f9']);
-  dona('chartAging', ${JSON.stringify(Object.keys(aging).map(t => t + 'd'))}, ${JSON.stringify(Object.values(aging).map(v => Math.round(v)))},
-    ['#f59e0b','#f97316','#ef4444','#dc2626']);
+  dona('chartAging', ${JSON.stringify(Object.keys(aging).map(t => (t === 'A vencer' ? t : t + 'd')))}, ${JSON.stringify(Object.values(aging).map(v => Math.round(v)))},
+    ${JSON.stringify(Object.keys(aging).map(t => TRAMO_HEX[t]))});
 
   // Ventas vs cobros: barras horizontales
   new Chart(document.getElementById('chartVC'), {

@@ -86,7 +86,7 @@ function main() {
   const cxc = P.parseCxC(ruta('cxc'), { corte });
   const cxp = P.parseCxP(ruta('cxp'));
   const caja = P.parseSubdiario(ruta('subdiario'));
-  const asiento = P.parseAsiento(ruta('asiento'));
+  const asiento = P.parsearAsientoResumen(ruta('asiento'));
   const ranking = P.parseRanking(ruta('ranking'));
 
   // --- verificaciones: suma calculada vs subtotal del CSV ---

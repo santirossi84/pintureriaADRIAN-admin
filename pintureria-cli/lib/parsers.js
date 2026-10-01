@@ -125,10 +125,13 @@ function parseCxC(path, { corte, excluir = EXCLUIR_CXC } = {}) {
 
   const tramos = { '0-30': 0, '31-60': 0, '61-90': 0, '+90': 0 };
   for (const c of giro) {
+    c.viejo = 0; c.maxDias = 0; // +90 por cliente y antigüedad máxima (para acciones de cobranza)
     for (const it of c.items) {
       const dias = it.vence && corte ? Math.floor((corte - it.vence) / 86400000) : 999;
       const t = dias <= 30 ? '0-30' : dias <= 60 ? '31-60' : dias <= 90 ? '61-90' : '+90';
       tramos[t] += it.importe;
+      if (t === '+90') c.viejo += it.importe;
+      if (dias !== 999 && dias > c.maxDias) c.maxDias = dias;
     }
   }
   const total = giro.reduce((a, c) => a + c.total, 0);
@@ -170,16 +173,25 @@ function parseSubdiario(path) {
 }
 
 // Egresos = cuentas al Debe distintas de caja (la caja al Debe son los ingresos).
-function parseAsiento(path) {
+// Además de las cuentas devuelve:
+//  - retiroAdrian: Debe de la cuenta 890
+//  - sobranteCaja: Haber de cuentas cuya descripción incluye SOBRANTE / INGRESOS VARIOS / OTROS INGRESOS
+const SOBRANTE_RE = /sobrante|ingresos varios|otros ingresos/;
+
+function parsearAsientoResumen(path) {
   const { rows, ultima } = readCsv(path);
-  const items = rows.map(r => ({
+  const cuentas = rows.map(r => ({
     cuenta: r[0].trim(), nombre: r[2].trim(), debe: parseNum(r[3]), haber: parseNum(r[4]),
   }));
-  const egresos = items.filter(i => i.debe > 0 && i.cuenta !== '1004')
-    .sort((a, b) => b.debe - a.debe).map(i => ({ nombre: i.nombre, monto: i.debe }));
-  const debe = items.reduce((a, i) => a + i.debe, 0);
+  const egresos = cuentas.filter(i => i.debe > 0 && i.cuenta !== '1004')
+    .sort((a, b) => b.debe - a.debe).map(i => ({ cuenta: i.cuenta, nombre: i.nombre, monto: i.debe }));
+  const debe = cuentas.reduce((a, i) => a + i.debe, 0);
+  const retiroAdrian = cuentas.filter(i => i.cuenta === '890').reduce((a, i) => a + i.debe, 0);
+  const sobrantes = cuentas.filter(i => i.haber > 0 && SOBRANTE_RE.test(norm(i.nombre)));
   return {
-    egresos, totalEgresos: egresos.reduce((a, e) => a + e.monto, 0),
+    cuentas, egresos, totalEgresos: egresos.reduce((a, e) => a + e.monto, 0),
+    retiroAdrian,
+    sobranteCaja: sobrantes.reduce((a, i) => a + i.haber, 0),
     check: verificar('Asiento resumen (Debe)', debe, parseNum(ultima[3])),
   };
 }
@@ -194,5 +206,5 @@ function parseRanking(path) {
 
 module.exports = {
   EXCLUIR_CXC, parseNum, parseFecha, detectType,
-  parseVentas, parseCobros, parseCxC, parseCxP, parseSubdiario, parseAsiento, parseRanking,
+  parseVentas, parseCobros, parseCxC, parseCxP, parseSubdiario, parsearAsientoResumen, parseRanking,
 };

@@ -16,6 +16,20 @@ const pct = (n, d) => (d ? (n / d) * 100 : 0);
 const pct1 = n => n.toFixed(1) + '%';
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
 
+// Formato de narrativa (SKILL.md): $13.6M, $118K, variaciones con signo
+const m = n => {
+  const a = Math.abs(n), s = n < 0 ? '-' : '';
+  if (a >= 1e6) return `${s}$${(a / 1e6).toFixed(1)}M`;
+  if (a >= 1e3) return `${s}$${Math.round(a / 1e3)}K`;
+  return `${s}$${Math.round(a)}`;
+};
+const signo = v => `${v >= 0 ? '+' : ''}${v.toFixed(0)}%`;
+const normNombre = s => String(s).toUpperCase().replace(/[^A-Z0-9]/g, '');
+const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;
+const meses = dias => Math.max(Math.round(dias / 30), 1);
+const narr = (parrafos, extra = '') =>
+  `<div class="card glass narr">${parrafos.map(p => `<p>${p}</p>`).join('')}${extra}</div>`;
+
 // Variación vs mes anterior. bajaEsBuena: para CxC/CxP, que baje es positivo.
 function delta(actual, prev, { bajaEsBuena = false, label = 'mes anterior' } = {}) {
   if (prev == null) return '<div class="kpi-delta neutral">sin comparativo</div>';
@@ -118,6 +132,16 @@ tr:hover td { background:rgba(255,255,255,0.02); }
 .progress-fill { height:100%; width:0; border-radius:6px; transition:width 0.8s cubic-bezier(0.22,1,0.36,1); }
 .spark { display:block; margin-left:auto; }
 .heat { border-radius:6px; }
+.narr { margin:0 0 1.5rem; }
+.narr p { color:var(--text2); font-size:0.95rem; margin-bottom:0.6rem; }
+.narr p:last-child { margin-bottom:0; }
+.narr strong { color:var(--text); font-weight:600; }
+.narr .frase { color:var(--text); font-size:1.25rem; font-weight:500; line-height:1.4; margin-bottom:1rem; }
+.narr ul { margin:0 0 0 1.25rem; color:var(--text2); font-size:0.95rem; }
+.narr li { margin-bottom:0.35rem; }
+.narr li.urgente { color:var(--red); }
+.action .monto { color:var(--text3); font-size:0.8rem; margin-top:0.35rem; }
+.action .monto strong { color:var(--text); }
 .note { color:var(--text3); font-size:0.85rem; margin-top:1rem; }
 footer { padding:2rem 0; text-align:center; }
 footer p { color:var(--text3); font-size:0.8rem; margin-bottom:0.25rem; }
@@ -160,22 +184,107 @@ function generarHtml(d) {
   const cobrosRatio = ventas.total ? cobros.total / ventas.total : 0;
   const pl = d.prevLabels[0];
 
-  // --- alertas automáticas (reglas simples) ---
-  const alertas = [];
-  if (caja.saldo < 0) {
-    alertas.push(['warning', `Saldo de caja negativo ${peso(caja.saldo)}`,
-      `Los egresos (${peso(caja.egreso)}) superaron los ingresos (${peso(caja.ingreso)}). El mayor egreso fue ${esc(asiento.egresos[0].nombre)} (${peso(asiento.egresos[0].monto)}).`]);
+  // ---------- narrativa automática (reglas de SKILL.md) ----------
+  const varVentas = prev.ventas ? pct(ventas.total - prev.ventas, prev.ventas) : null;
+  const topVtaPct = pct(top10vta[0].monto, ventas.total);
+  const ingreso = caja.ingreso, saldo = caja.saldo;
+  const ariel = cxp.proveedores.find(p => /ARIEL/i.test(p.nombre));
+  const sobrante = asiento.sobranteCaja > 0 ? asiento.sobranteCaja : 0;
+  const retirosPct = pct(totRetiros, egTotal);
+  const cxcSube = prev.cxc == null || cxc.total >= prev.cxc;
+
+  // Proveedores que también nos deben (match exacto de nombre, sin aproximados)
+  const deudoresPorNombre = new Map(cxc.ranking.map(c => [normNombre(c.nombre), c]));
+  const cruzados = cxp.proveedores.map(p => ({ p, c: deudoresPorNombre.get(normNombre(p.nombre)) })).filter(x => x.c);
+
+  // Resumen: una oración + 3-4 bullets sin números detallados
+  const adjVentas = varVentas == null ? 'normal' : varVentas > 20 ? 'muy bueno' : varVentas > 5 ? 'bueno' : varVentas < -20 ? 'flojo' : varVentas < -5 ? 'algo más flojo' : 'parejo';
+  const ventasBien = varVentas != null && varVentas > 5, ventasMal = varVentas != null && varVentas < -5;
+  const cajaFrase = saldo < 0 ? 'la caja cerró en negativo' : saldo < ingreso * 0.05 ? 'la caja quedó justa' : 'la caja quedó holgada';
+  const cajaMal = saldo < ingreso * 0.05;
+  const conector = (ventasBien && cajaMal) || (ventasMal && !cajaMal) ? 'pero' : 'y';
+  const fraseResumen = `${mesNombre} fue un mes ${adjVentas} en ventas ${conector} ${cajaFrase}.`;
+
+  const bullets = [];
+  if (viejo > 40) bullets.push(['urgente', `Lo más urgente: más del 40% de lo que nos deben tiene más de 3 meses. Hay que ordenar la cobranza de esa deuda.`]);
+  bullets.push([null, varVentas == null ? 'Ventas del mes sin comparativo contra el mes anterior.'
+    : `Ventas ${varVentas >= 0 ? 'arriba' : 'abajo'} respecto de ${pl}${Math.abs(varVentas) > 20 ? ' — un cambio grande, vale entender la causa' : ''}.`]);
+  bullets.push([null, cobrosRatio >= 1 ? 'Cobramos más de lo que vendimos: se está recuperando deuda vieja.'
+    : cobrosRatio < 0.8 ? 'Cobramos bastante menos de lo que vendimos: estamos financiando a los clientes.'
+    : 'Cobramos un poco menos de lo que vendimos: la deuda de clientes crece apenas.']);
+  bullets.push([null, saldo < 0 ? 'La caja del mes quedó negativa: salió más plata de la que entró.' : 'La caja del mes cerró con saldo a favor.']);
+  if (viejo <= 40) bullets.push([null, 'La deuda vieja de clientes está dentro de lo habitual del rubro.']);
+  const resumenHtml = `<div class="card glass narr"><p class="frase">${fraseResumen}</p><ul>${bullets.slice(0, 4).map(([c, t]) => `<li${c ? ` class="${c}"` : ''}>${t}</li>`).join('')}</ul></div>`;
+
+  // Ventas
+  const narrVentas = [`Vendimos <strong>${m(ventas.total)}</strong> en ${ventas.facturas} facturas — un ticket promedio de <strong>${m(ventas.ticket)}</strong>.`];
+  if (varVentas != null) {
+    narrVentas.push(`Contra ${pl} (${m(prev.ventas)}) es ${signo(varVentas)}: ${Math.abs(varVentas) > 20
+      ? 'un movimiento atípico, conviene revisar si lo explica un cliente grande o la estacionalidad.' : 'dentro de lo normal.'}`);
   }
-  if (viejo > 50) {
-    alertas.push(['warning', `Cartera vieja: ${pct1(viejo)} de la CxC tiene más de 90 días`,
-      `${peso(aging['+90'])} de ${peso(cxc.total)}. Los 10 principales deudores concentran ${peso(top10cxc.reduce((a, c) => a + c.monto, 0))}.`]);
+  if (topVtaPct > 25) {
+    narrVentas.push(`${esc(top10vta[0].nombre)} concentra el ${pct1(topVtaPct)} de las ventas${topVtaPct > 30
+      ? ' — riesgo de concentración: dependemos mucho de un solo cliente.' : ' — ojo con la dependencia de este cliente.'}`);
   }
-  if (prev.cxc != null && cxc.total < prev.cxc) {
-    alertas.push(['highlight', `CxC en baja: ${pct1(Math.abs(pct(cxc.total - prev.cxc, prev.cxc)))} vs ${pl}`,
-      `Pasó de ${peso(prev.cxc)} a ${peso(cxc.total)} con ${cxc.deudores} deudores activos.`]);
+
+  // Cobros y CxC
+  const narrCobros = [`Por cada peso que vendimos, cobramos <strong>$${cobrosRatio.toFixed(2)}</strong>. ${cobrosRatio < 1
+    ? (cxcSube ? 'Estamos financiando a los clientes — la deuda crece.' : `Igual, lo que nos deben bajó respecto de ${pl}.`)
+    : cobrosRatio > 1 ? 'Cobramos deuda vieja — buena señal.' : ''}${cobrosRatio < 0.8 ? ' Estamos financiando bastante: conviene vigilarlo.' : ''}`];
+  narrCobros.push(`De los <strong>${m(cxc.total)}</strong> que nos deben, ${m(aging['+90'])} tienen más de 3 meses (${pct1(viejo)}) — esa es la deuda difícil. ${viejo > 40
+    ? 'Pasa el 40%: es lo primero a atacar.' : 'Es una proporción normal para el rubro.'}`);
+  const top10cxcSum = top10cxc.reduce((a, c) => a + c.monto, 0);
+  narrCobros.push(`Los 10 que más nos deben concentran el ${pct1(pct(top10cxcSum, cxc.total))} de la deuda.`);
+
+  // Flujo de caja
+  const topEg = asiento.egresos.slice(0, 3).map(e => `${esc(e.nombre)} (${pct1(pct(e.monto, egTotal))})`).join(', ');
+  const narrFlujo = [`Entró <strong>${m(caja.ingreso)}</strong>, salió <strong>${m(caja.egreso)}</strong>, ${saldo < 0 ? 'faltó' : 'quedó'} <strong>${m(Math.abs(saldo))}</strong>.`,
+    `Lo que más pesó en los egresos: ${topEg}.`];
+  if (saldo < 0) {
+    narrFlujo.push(`El faltante se explica sobre todo por ${esc(asiento.egresos[0].nombre)} (${m(asiento.egresos[0].monto)}). No es una emergencia si hay caja acumulada de meses anteriores, pero hay que tenerlo presente.`);
   }
-  const alertasHtml = alertas.map(([t, h, p]) =>
-    `<div class="${t === 'warning' ? 'warning-box' : 'highlight-box'}"><h4>${h}</h4><p>${p}</p></div>`).join('');
+
+  // Lo que debemos
+  const narrCxp = [`Le debemos <strong>${m(cxp.total)}</strong> a ${plural(cxp.proveedores.length, 'proveedor', 'proveedores')}.`];
+  if (cxp.proveedores.length) narrCxp.push(`El más grande es ${esc(cxp.proveedores[0].nombre)}: ${m(cxp.proveedores[0].total)} (${pct1(pct(cxp.proveedores[0].total, cxp.total))}).`);
+  for (const { p, c } of cruzados) {
+    const neto = c.total - p.total;
+    narrCxp.push(`${esc(p.nombre)} también figura entre quienes nos deben (${m(c.total)}): en neto ${neto >= 0 ? `nos debe ${m(neto)} a nosotros` : `le debemos ${m(-neto)}`}.`);
+  }
+  if (!ariel) narrCxp.push('Con Pinturería Ariel estamos al día: no figura deuda con ellos.');
+  else narrCxp.push(`Con Pinturería Ariel tenemos un saldo de ${m(ariel.total)} (${pct1(pct(ariel.total, cxp.total))} de lo que debemos).`);
+
+  // Retiros
+  const narrRetiros = [`Los retiros y préstamos de socios suman <strong>${m(totRetiros)}</strong> en bruto.`];
+  if (sobrante) narrRetiros.push(`Restando el sobrante de caja (${m(sobrante)}), el retiro neto de Adrián es <strong>${m(asiento.retiroAdrian - sobrante)}</strong> (bruto ${m(asiento.retiroAdrian)}).`);
+  if (retirosPct > 20) narrRetiros.push(`Representan el ${pct1(retirosPct)} de los egresos del mes.`);
+
+  // Acciones priorizadas por monto en juego (máx. 5)
+  const acciones = [];
+  const viejos = cxc.ranking.filter(c => c.viejo > 0).sort((a, b) => b.viejo - a.viejo).slice(0, 3);
+  if (viejos.length) {
+    const lista = viejos.map(c => `${esc(c.nombre)} (${m(c.viejo)}, hace ${plural(meses(c.maxDias), 'mes', 'meses')})`).join(', ');
+    acciones.push({ urgente: viejo > 40, titulo: 'Cobrar la deuda vieja más grande', monto: viejos.reduce((a, c) => a + c.viejo, 0),
+      texto: `Contactar a ${lista}. Son los que más pesan dentro de los ${m(aging['+90'])} con más de 3 meses${viejo > 40 ? ' (la cartera vieja pasa el 40%)' : ''}. Usar el tablero de cobranzas con WhatsApp.` });
+  }
+  if (cobrosRatio < 0.8) {
+    acciones.push({ titulo: 'Cobrar lo reciente antes de que envejezca', monto: aging['0-30'] + aging['31-60'],
+      texto: `Cobramos $${cobrosRatio.toFixed(2)} por cada peso vendido. Hacer seguimiento a lo que tiene hasta 60 días para que no pase a deuda difícil.` });
+  }
+  if (saldo < 0) {
+    acciones.push({ titulo: 'Cubrir el faltante de caja', monto: -saldo,
+      texto: `El mes cerró ${m(saldo)}. Revisar cuánta caja acumulada hay y alinear los pagos del mes que viene con lo que efectivamente se cobre.` });
+  }
+  if (topVtaPct > 25) {
+    acciones.push({ titulo: `Cuidar a ${top10vta[0].nombre}`, monto: top10vta[0].monto,
+      texto: `Explica el ${pct1(topVtaPct)} de las ventas del mes. Confirmar que sigue comprando y revisar cómo está su cuenta corriente.` });
+  }
+  for (const { p, c } of cruzados) {
+    acciones.push({ titulo: `Compensar con ${p.nombre}`, monto: Math.min(p.total, c.total),
+      texto: `Le debemos ${m(p.total)} y nos debe ${m(c.total)}: se puede cruzar y pagar solo la diferencia.` });
+  }
+  acciones.sort((a, b) => (b.urgente === true) - (a.urgente === true) || b.monto - a.monto); // alerta roja primero
+  const topAcciones = acciones.slice(0, 5);
 
   const notasHtml = notas
     ? `<div class="card glass" style="margin:1.5rem 0;"><h3>Contexto del mes</h3>${notas.split(/\r?\n/).filter(l => l.trim())
@@ -190,19 +299,19 @@ function generarHtml(d) {
     kpi(ventas.facturas, 'int', 'Facturas Emitidas'),
     kpi(ventas.ticket, 'money', 'Ticket Promedio'),
     kpi(cobros.total, 'money', 'Cobros del Mes', `<div class="kpi-delta neutral">ratio ${cobrosRatio.toFixed(2)}x sobre ventas</div>`),
-    kpi(cxc.total, 'money', 'CxC Giro Normal', delta(cxc.total, prev.cxc, { bajaEsBuena: true, label: pl })),
-    kpi(cxp.total, 'money', 'CxP Total', delta(cxp.total, prev.cxp, { bajaEsBuena: true, label: pl })),
+    kpi(cxc.total, 'money', 'Nos deben (CxC)', delta(cxc.total, prev.cxc, { bajaEsBuena: true, label: pl })),
+    kpi(cxp.total, 'money', 'Debemos (CxP)', delta(cxp.total, prev.cxp, { bajaEsBuena: true, label: pl })),
   ].join('');
 
   const secciones = [];
   const add = (id, nav, icon, titulo, cuerpo) => secciones.push({ id, nav, icon, titulo, cuerpo });
 
-  add('resumen', 'Resumen', 'resumen', 'Resumen del Mes', `<div class="kpi-grid">${kpis}</div>${alertasHtml}${notasHtml}`);
+  add('resumen', 'Resumen', 'resumen', 'Resumen del Mes', `<div class="kpi-grid">${kpis}</div>${resumenHtml}${notasHtml}`);
 
   // --- evolución: tabla con sparklines + gráfico de área ---
   const hayEvolucion = serie.meses.length >= 2 && ['ventas', 'cxc', 'cxp'].some(k => serie[k].filter(v => v != null).length >= 2);
   if (hayEvolucion) {
-    const filasEv = [['ventas', 'Ventas netas', false], ['cxc', 'CxC giro normal', true], ['cxp', 'CxP total', true]]
+    const filasEv = [['ventas', 'Ventas netas', false], ['cxc', 'Lo que nos deben (CxC)', true], ['cxp', 'Lo que debemos (CxP)', true]]
       .filter(([k]) => serie[k].filter(v => v != null).length >= 2)
       .map(([k, nombre, baja]) => {
         const v = serie[k], last = v[v.length - 1], pr = v[v.length - 2];
@@ -220,7 +329,25 @@ function generarHtml(d) {
 <div class="chart-wide glass"><canvas id="chartEvolucion"></canvas></div>`);
   }
 
-  add('flujo', 'Flujo', 'flujo', 'Flujo de Caja', `
+  // --- ventas vs cobros ---
+  const difVC = cobros.total - ventas.total;
+  const clsVC = cobrosRatio > 1 ? 'green' : cobrosRatio < 1 ? 'yellow' : 'text2';
+  const notaVC = cobrosRatio > 1 ? 'Cobramos deuda vieja'
+    : cobrosRatio < 1 ? 'Vendimos más de lo que cobramos — lo que nos deben crece' : 'Cobramos lo mismo que vendimos';
+  const vsCobros = `
+<div class="card glass" style="margin-bottom:1.5rem;"><h3>Ventas vs Cobros</h3>
+<div class="cards-grid" style="align-items:center;">
+  <div><table>
+    <tr><td>Ventas del mes</td><td class="text-right mono">${peso(ventas.total)}</td></tr>
+    <tr><td>Cobros del mes</td><td class="text-right mono">${peso(cobros.total)}</td></tr>
+    <tr><td>Diferencia (cobros − ventas)</td><td class="text-right mono" style="color:var(--${difVC >= 0 ? 'green' : 'yellow'});">${peso(difVC)}</td></tr>
+    <tr style="border-top:2px solid var(--border);"><td><strong>Ratio cobros/ventas</strong></td><td class="text-right mono" style="color:var(--${clsVC});"><strong>${cobrosRatio.toFixed(2)}x</strong></td></tr>
+  </table>
+  <p class="note" style="color:var(--${clsVC});">${notaVC}</p></div>
+  <div><canvas id="chartVC" height="140"></canvas></div>
+</div></div>`;
+
+  add('flujo', 'Flujo', 'flujo', 'Flujo de Caja', `${narr(narrFlujo)}${vsCobros}
 <div class="cards-grid">
   <div class="card glass"><h3>Movimiento de Caja</h3><table>
     <tr><td>Ingreso Caja Pesos</td><td class="text-right mono" style="color:var(--green);">${peso(caja.ingreso)}</td></tr>
@@ -238,28 +365,31 @@ function generarHtml(d) {
 <tr><td><span class="badge ${TRAMO_BADGE[t]}">${t} días</span></td><td class="text-right mono">${peso(m)}</td><td class="text-right">${pct1(pct(m, cxc.total))}</td>
 <td style="min-width:140px;"><div class="progress-bar"><div class="progress-fill" data-w="${Math.max(pct(m, cxc.total), 0.5).toFixed(1)}" style="background:${TRAMO_COLOR[t]};"></div></div></td></tr>`).join('');
 
-  add('cobranzas', 'Cobranzas', 'cobranzas', 'Cuentas por Cobrar y Cobranzas', `
+  add('cobranzas', 'Nos deben', 'cobranzas', 'Lo que nos deben (CxC) y Cobranzas', `
+${narr(narrCobros)}
 <div class="cards-grid">
-  <div class="card glass"><h3>CxC Giro Normal</h3>
+  <div class="card glass"><h3>Lo que nos deben (giro normal)</h3>
     <div style="text-align:center;margin:1rem 0;"><div style="font-size:2rem;font-weight:600;color:var(--accent2);">${peso(cxc.total)}</div>
     <div style="color:var(--text3);">${cxc.deudores} deudores activos</div></div>
     ${cxc.excluidos.length ? `<p class="note">Excluidos del giro normal: ${cxc.excluidos.map(e => esc(e.nombre)).join(', ')} (${peso(cxc.totalExcluido)}).</p>` : ''}
   </div>
-  <div class="card glass"><h3>Aging CxC</h3><div class="chart-container"><canvas id="chartAging"></canvas></div></div>
+  <div class="card glass"><h3>Antigüedad de lo que nos deben</h3><div class="chart-container"><canvas id="chartAging"></canvas></div></div>
 </div>
 <div class="table-wrap glass"><table>
 <thead><tr><th>Tramo</th><th class="text-right">Monto</th><th class="text-right">%</th><th>Barra</th></tr></thead>
 <tbody>${tramosHtml}</tbody></table></div>
 <h3 style="margin:2rem 0 1rem;">Top 10 Deudores</h3><div class="glass">${topTabla(top10cxc, cxc.total, 'Deuda', { heatmap: true })}</div>`);
 
-  add('cxp', 'CxP', 'cxp', 'Cuentas por Pagar', `
-<div class="card glass" style="max-width:600px;"><h3>CxP total</h3>
+  add('cxp', 'Debemos', 'cxp', 'Lo que debemos (CxP)', `
+${narr(narrCxp)}
+<div class="card glass" style="max-width:600px;"><h3>Lo que debemos (total)</h3>
 <div style="text-align:center;margin:1rem 0;"><div style="font-size:2rem;font-weight:600;color:var(--accent1);">${peso(cxp.total)}</div>
 <div style="color:var(--text3);">${cxp.proveedores.length} proveedor${cxp.proveedores.length === 1 ? '' : 'es'}</div></div>
 <table><thead><tr><th>Proveedor</th><th class="text-right">Deuda</th><th class="text-right">%</th></tr></thead>
 <tbody>${cxp.proveedores.map(p => `<tr><td>${esc(p.nombre)}</td><td class="text-right mono">${peso(p.total)}</td><td class="text-right">${pct1(pct(p.total, cxp.total))}</td></tr>`).join('')}</tbody></table></div>`);
 
   add('ventas', 'Ventas', 'ventas', 'Ventas', `
+${narr(narrVentas)}
 <div class="cards-grid">
   <div class="card glass"><h3>Top 10 Clientes por Ventas</h3>${topTabla(top10vta, ventas.total, 'Importe')}
     <p class="note">Los top 10 concentran el ${pct1(pct(top10sum, ventas.total))} de las ventas.</p></div>
@@ -274,7 +404,18 @@ function generarHtml(d) {
 </div>`);
 
   if (retiros.length) {
-    add('retiros', 'Retiros', 'retiros', 'Retiros de Socios y Préstamos', `
+    // Retiro neto Adrián: solo cuando el asiento trae sobrante de caja
+    const sobrante = asiento.sobranteCaja;
+    const netoHtml = sobrante > 0 ? `
+<div class="card glass" style="max-width:600px;margin-bottom:1.5rem;"><h3>Retiro neto Adrián</h3>
+<div style="text-align:center;margin:1rem 0 1.5rem;"><div style="font-size:2rem;font-weight:600;color:var(--accent2);">${peso(asiento.retiroAdrian - sobrante)}</div>
+<div style="color:var(--text3);font-size:0.85rem;">retiro neto real</div></div>
+<table>
+<tr><td>Retiro bruto Adrián</td><td class="text-right mono">${peso(asiento.retiroAdrian)}</td></tr>
+<tr><td>Sobrante de caja</td><td class="text-right mono" style="color:var(--green);">-${peso(sobrante)}</td></tr>
+<tr style="border-top:2px solid var(--border);"><td><strong>Retiro neto Adrián</strong></td><td class="text-right mono"><strong>${peso(asiento.retiroAdrian - sobrante)}</strong></td></tr>
+</table></div>` : '';
+    add('retiros', 'Retiros', 'retiros', 'Retiros de Socios y Préstamos', `${narr(narrRetiros)}${netoHtml}
 <div class="card glass" style="max-width:600px;"><table>
 <thead><tr><th>Concepto</th><th class="text-right">Monto</th><th class="text-right">% Egresos</th></tr></thead>
 <tbody>${retiros.map(r => `<tr><td>${esc(r.nombre)}</td><td class="text-right mono">${peso(r.monto)}</td><td class="text-right">${pct1(pct(r.monto, egTotal))}</td></tr>`).join('')}</tbody>
@@ -282,24 +423,10 @@ function generarHtml(d) {
 </table></div>`);
   }
 
-  // --- plan de acción: reglas simples sobre los datos del mes ---
-  const acciones = [];
-  if (aging['+90'] > 0 && viejo > 25) {
-    const top3 = top10cxc.slice(0, 3).map(c => `${esc(c.nombre)} (${corto(c.monto)})`).join(', ');
-    acciones.push(['Atacar la deuda +90 días', `${peso(aging['+90'])} (${pct1(viejo)} de la CxC). Priorizar: ${top3}. Usar el tablero de cobranzas con envío por WhatsApp.`]);
-  }
-  if (caja.saldo < 0) {
-    acciones.push(['Equilibrar el flujo de caja', `Saldo ${peso(caja.saldo)}: se pagó más de lo que se cobró. Alinear pagos a proveedores con cobros efectivos.`]);
-  }
-  if (egTotal && totRetiros / egTotal > 0.15) {
-    acciones.push(['Monitorear retiros vs generación de caja', `Retiros y préstamos suman ${peso(totRetiros)} (${pct1(pct(totRetiros, egTotal))} de los egresos).`]);
-  }
-  if (pct(top10vta[0].monto, ventas.total) > 25) {
-    acciones.push(['Diversificar la cartera de clientes', `${esc(top10vta[0].nombre)} explica el ${pct1(pct(top10vta[0].monto, ventas.total))} de las ventas.`]);
-  }
-  if (acciones.length) {
-    add('plan', 'Plan', 'plan', `Plan de Acción — ${MESES[(mesIdx + 1) % 12]} ${mesIdx === 11 ? anio + 1 : anio}`,
-      acciones.map(([h, p], i) => `<div class="action"><h4>${i + 1}. ${h}</h4><p>${p}</p></div>`).join(''));
+  // --- plan de acción: máx. 5 acciones, ordenadas por monto en juego ---
+  if (topAcciones.length) {
+    add('plan', 'Plan', 'plan', `Alertas y acciones — ${MESES[(mesIdx + 1) % 12]} ${mesIdx === 11 ? anio + 1 : anio}`,
+      topAcciones.map((x, i) => `<div class="action"><h4>${i + 1}. ${esc(x.titulo)}</h4><p>${x.texto}</p><p class="monto">En juego: <strong>${m(x.monto)}</strong></p></div>`).join(''));
   }
 
   add('control', 'Control', 'control', 'Control de Datos', `
@@ -386,6 +513,17 @@ function generarHtml(d) {
     ['#00d9ff','#f59e0b','#a78bfa','#ff6b9d','#10b981','#ef4444','#808080','#f97316','#38bdf8','#e879f9']);
   dona('chartAging', ${JSON.stringify(Object.keys(aging).map(t => t + 'd'))}, ${JSON.stringify(Object.values(aging).map(v => Math.round(v)))},
     ['#f59e0b','#f97316','#ef4444','#dc2626']);
+
+  // Ventas vs cobros: barras horizontales
+  new Chart(document.getElementById('chartVC'), {
+    type: 'bar',
+    data: { labels: ['Ventas', 'Cobros'], datasets: [{ data: [${Math.round(ventas.total)}, ${Math.round(cobros.total)}],
+      backgroundColor: ['rgba(0,217,255,0.75)', '${cobrosRatio > 1 ? 'rgba(16,185,129,0.75)' : cobrosRatio < 1 ? 'rgba(245,158,11,0.75)' : 'rgba(179,179,179,0.75)'}'], borderRadius: 6 }] },
+    options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false },
+      tooltip: { callbacks: { label: function (c) { return '$' + (c.raw / 1e6).toFixed(2) + 'M'; } } } },
+      scales: { x: { beginAtZero: true, ticks: { color: '#808080', callback: function (v) { return '$' + (v / 1e6).toFixed(0) + 'M'; } }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        y: { ticks: { color: '#b3b3b3' }, grid: { display: false } } } }
+  });
 
   // 3. Evolución: áreas con gradiente transparente bajo la línea
   var ev = document.getElementById('chartEvolucion');

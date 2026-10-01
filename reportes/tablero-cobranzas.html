@@ -99,6 +99,11 @@
   .modal-body { margin-bottom: 20px; }
   .modal textarea { width: 100%; min-height: 200px; padding: 12px; border: 1px solid var(--line2); border-radius: 6px; font-family: inherit; font-size: 13.5px; resize: vertical; background: #1b1e24; color: var(--txt); }
   .modal-actions { display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap; }
+  .aviso { display: none; background: rgba(245,158,11,.1); border: 1px solid rgba(245,158,11,.35); color: #fcd34d; padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; font-size: 13px; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .aviso.show { display: flex; }
+  .dup { color: var(--warn); cursor: help; font-size: 13px; margin-left: 2px; }
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translate(-50%, 20px); background: var(--panel2); border: 1px solid var(--line2); color: var(--txt); padding: 10px 18px; border-radius: 8px; font-size: 13px; opacity: 0; pointer-events: none; transition: all .25s; z-index: 200; }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
   @media (max-width: 800px) { body { padding: 12px; } }
   @media print { .toolbar, .btn, header { display: none; } body { background: #fff; color: #000; } }
 </style>
@@ -141,6 +146,8 @@
     </div>
   </div>
 
+  <div class="aviso" id="avisoBackup"></div>
+
   <div class="toolbar">
     <input type="text" id="buscar" placeholder="Buscar por nombre o N° de cliente..." oninput="render()">
     <select id="filtroEstado" onchange="render()">
@@ -158,11 +165,19 @@
       <option value="2025">Desde 2025</option>
       <option value="2026">Solo 2026</option>
     </select>
+    <select id="filtroTel" onchange="render()">
+      <option value="">Todos los teléfonos</option>
+      <option value="sin">Sin teléfono</option>
+      <option value="repetido">Teléfono repetido</option>
+    </select>
     <button class="btn btn-primary" onclick="agregarCliente()">+ Cliente</button>
     <button class="btn btn-success" onclick="document.getElementById('fileInput').click()">Importar CSV</button>
     <input type="file" id="fileInput" accept=".csv" style="display:none;" onchange="importarCSV(this.files[0])">
     <button class="btn btn-secondary" onclick="exportarCSV()">Exportar CSV</button>
-    <button class="btn btn-secondary" onclick="if(confirm('Borrar todo?')) { localStorage.removeItem(STORAGE_KEY); location.reload(); }">Limpiar</button>
+    <button class="btn btn-secondary" onclick="backup()">Descargar backup</button>
+    <button class="btn btn-secondary" onclick="document.getElementById('restoreInput').click()">Restaurar backup</button>
+    <input type="file" id="restoreInput" accept=".json" style="display:none;" onchange="restaurar(this.files[0])">
+    <button class="btn btn-secondary" onclick="vaciar()">Vaciar</button>
   </div>
 
   <div class="tbl-wrap"><table>
@@ -181,6 +196,7 @@
     <tbody id="tbody"></tbody>
   </table></div>
 
+  <div class="toast" id="toast"></div>
   <div class="footer">
     Datos guardados localmente • Pinturería Adrián © <span id="anio"></span>
   </div>
@@ -218,12 +234,34 @@ const ANTIGUEDAD = {
   '2026':      { label: 'Solo 2026',       clase: 'ant-2026' }
 };
 
-const DEUDORES_INICIALES = [{"id":382,"nombre":"FASINO HORACIO","nroCliente":"382","antiguedad":"2026","telefono":"","monto":1067759.33,"estado":"sin-activar","notas":""},{"id":124,"nombre":"MONDINO NATALIA","nroCliente":"124","antiguedad":"2026","telefono":"","monto":663982.06,"estado":"sin-activar","notas":""},{"id":806,"nombre":"RAMALLO MARTIN","nroCliente":"806","antiguedad":"2024","telefono":"","monto":641639.23,"estado":"sin-activar","notas":""},{"id":224,"nombre":"BERTONI RUBEN","nroCliente":"224","antiguedad":"2026","telefono":"","monto":567982.82,"estado":"sin-activar","notas":""},{"id":430,"nombre":"BRAVO VANESA","nroCliente":"430","antiguedad":"2026","telefono":"","monto":549999.99,"estado":"sin-activar","notas":""},{"id":70,"nombre":"MARCHETTI HECTOR","nroCliente":"70","antiguedad":"2026","telefono":"","monto":506628.65,"estado":"sin-activar","notas":""},{"id":1,"nombre":"ROSSI MARTIN","nroCliente":"1","antiguedad":"2026","telefono":"5493492596439","monto":486632.66,"estado":"sin-activar","notas":""},{"id":30,"nombre":"CAGLIERIS NELLY","nroCliente":"30","antiguedad":"2026","telefono":"5493492302681","monto":350000,"estado":"sin-activar","notas":""},{"id":827,"nombre":"ANTONIOZ MARTA","nroCliente":"827","antiguedad":"2026","telefono":"","monto":313153.71,"estado":"sin-activar","notas":""},{"id":122,"nombre":"PORPORATO RENE","nroCliente":"122","antiguedad":"2026","telefono":"5493492583713","monto":259501.16,"estado":"sin-activar","notas":""},{"id":712,"nombre":"ERARD MIGUEL","nroCliente":"712","antiguedad":"2026","telefono":"","monto":248661.39,"estado":"sin-activar","notas":""},{"id":745,"nombre":"OVENA JORGE","nroCliente":"745","antiguedad":"2026","telefono":"5493492627721","monto":247278.88,"estado":"sin-activar","notas":""},{"id":761,"nombre":"IMHOF CARLOS","nroCliente":"761","antiguedad":"2025","telefono":"","monto":243035.3,"estado":"sin-activar","notas":""},{"id":992,"nombre":"ROSOTO CARLOS","nroCliente":"992","antiguedad":"2026","telefono":"","monto":212542.06,"estado":"sin-activar","notas":""},{"id":93,"nombre":"ROSSI ALEJANDRA","nroCliente":"93","antiguedad":"2024","telefono":"5493492592546","monto":208773.36,"estado":"sin-activar","notas":""},{"id":274,"nombre":"FAULKNER NAZARENO","nroCliente":"274","antiguedad":"2025","telefono":"5493492623806","monto":201703.85,"estado":"sin-activar","notas":""},{"id":13,"nombre":"CORAGLIA ARIEL","nroCliente":"13","antiguedad":"2026","telefono":"5493492626975","monto":182790.47,"estado":"sin-activar","notas":""},{"id":955,"nombre":"PICATTO MARIO","nroCliente":"955","antiguedad":"2026","telefono":"5493492596439","monto":164392.1,"estado":"sin-activar","notas":""},{"id":969,"nombre":"TORTA MAURO","nroCliente":"969","antiguedad":"2026","telefono":"5493492609681","monto":158374.05,"estado":"sin-activar","notas":""},{"id":250,"nombre":"TOLEDO VICTOR","nroCliente":"250","antiguedad":"2026","telefono":"","monto":154504.39,"estado":"sin-activar","notas":""},{"id":980,"nombre":"COMUNA DE COLONIA ANITA","nroCliente":"980","antiguedad":"2026","telefono":"","monto":154471.26,"estado":"sin-activar","notas":""},{"id":31,"nombre":"MALETTO LIDNEY E HIJOS","nroCliente":"31","antiguedad":"2026","telefono":"","monto":146600.88,"estado":"sin-activar","notas":""},{"id":809,"nombre":"CELIZ LUCAS","nroCliente":"809","antiguedad":"2025","telefono":"","monto":138285.32,"estado":"sin-activar","notas":""},{"id":622,"nombre":"MARTINO DARDO","nroCliente":"622","antiguedad":"2026","telefono":"5493492584159","monto":135610.73,"estado":"sin-activar","notas":""},{"id":708,"nombre":"LEIVA LELO","nroCliente":"708","antiguedad":"2024","telefono":"","monto":128164.52,"estado":"sin-activar","notas":""},{"id":89,"nombre":"VAZQUEZ DIEGO","nroCliente":"89","antiguedad":"2025","telefono":"","monto":127102.88,"estado":"sin-activar","notas":""},{"id":1042,"nombre":"MASUERO JUANI","nroCliente":"1042","antiguedad":"2026","telefono":"","monto":109147.2,"estado":"sin-activar","notas":""},{"id":364,"nombre":"SALUSSO EDGAR","nroCliente":"364","antiguedad":"2026","telefono":"","monto":91697.71,"estado":"sin-activar","notas":""},{"id":318,"nombre":"ULMAN JOSE","nroCliente":"318","antiguedad":"2026","telefono":"","monto":90461.25,"estado":"sin-activar","notas":""},{"id":684,"nombre":"MASUERO EMANUEL","nroCliente":"684","antiguedad":"2025","telefono":"","monto":86082.08,"estado":"sin-activar","notas":""},{"id":114,"nombre":"STEFANETTO JUDITH","nroCliente":"114","antiguedad":"2026","telefono":"","monto":79624.21,"estado":"sin-activar","notas":""},{"id":96,"nombre":"ARDILES CRUZ","nroCliente":"96","antiguedad":"historico","telefono":"","monto":77206.11,"estado":"sin-activar","notas":""},{"id":508,"nombre":"BOMBEROS VOLUNTARIOS RAMONA","nroCliente":"508","antiguedad":"2026","telefono":"","monto":76596.91,"estado":"sin-activar","notas":""},{"id":664,"nombre":"POPE","nroCliente":"664","antiguedad":"2026","telefono":"","monto":74466.27,"estado":"sin-activar","notas":""},{"id":378,"nombre":"OCOCHA","nroCliente":"378","antiguedad":"2026","telefono":"5493492411762","monto":70420.13,"estado":"sin-activar","notas":""},{"id":256,"nombre":"DEROTIER IVAN","nroCliente":"256","antiguedad":"historico","telefono":"","monto":69730.82,"estado":"sin-activar","notas":""},{"id":566,"nombre":"RUIZ AXEL","nroCliente":"566","antiguedad":"2026","telefono":"","monto":66520.87,"estado":"sin-activar","notas":""},{"id":348,"nombre":"MASUERO EMILIANO","nroCliente":"348","antiguedad":"2026","telefono":"","monto":60917.12,"estado":"sin-activar","notas":""},{"id":901,"nombre":"GUILLEN VERONICA","nroCliente":"901","antiguedad":"2026","telefono":"","monto":59519.69,"estado":"sin-activar","notas":""},{"id":242,"nombre":"RAMONA HOGAR","nroCliente":"242","antiguedad":"2026","telefono":"","monto":56038.25,"estado":"sin-activar","notas":""},{"id":41,"nombre":"PEIRETTI RAUL","nroCliente":"41","antiguedad":"2026","telefono":"5493492576499","monto":51311.96,"estado":"sin-activar","notas":""},{"id":184,"nombre":"FRANCO RICARDO","nroCliente":"184","antiguedad":"2024","telefono":"5493491414970","monto":51311.56,"estado":"sin-activar","notas":""},{"id":1016,"nombre":"GUTIERREZ SILVINA","nroCliente":"1016","antiguedad":"2025","telefono":"","monto":51191.05,"estado":"sin-activar","notas":""},{"id":696,"nombre":"ANDERMATTEN AGUSTIN","nroCliente":"696","antiguedad":"2026","telefono":"","monto":50618.47,"estado":"sin-activar","notas":""},{"id":25,"nombre":"PEIRETTI HECTOR","nroCliente":"25","antiguedad":"2026","telefono":"","monto":50617.32,"estado":"sin-activar","notas":""},{"id":1001,"nombre":"CARBALLO JAVIER","nroCliente":"1001","antiguedad":"2025","telefono":"","monto":50438.43,"estado":"sin-activar","notas":""},{"id":513,"nombre":"PLATINI MATIAS","nroCliente":"513","antiguedad":"2025","telefono":"","monto":50337.4,"estado":"sin-activar","notas":""},{"id":873,"nombre":"DIAZ DANTE","nroCliente":"873","antiguedad":"2026","telefono":"","monto":45267.32,"estado":"sin-activar","notas":""},{"id":486,"nombre":"LEDESMA JUAN","nroCliente":"486","antiguedad":"2025","telefono":"","monto":43500.78,"estado":"sin-activar","notas":""},{"id":932,"nombre":"RICO MONICA","nroCliente":"932","antiguedad":"2025","telefono":"5493491698196","monto":43500,"estado":"sin-activar","notas":""},{"id":33,"nombre":"ALESSANDRIA CARLOS","nroCliente":"33","antiguedad":"2026","telefono":"","monto":42364.8,"estado":"sin-activar","notas":""},{"id":35,"nombre":"ANDERMATTEN CARLOS","nroCliente":"35","antiguedad":"2024","telefono":"","monto":38949.21,"estado":"sin-activar","notas":""},{"id":55,"nombre":"ARMANDO MARIO","nroCliente":"55","antiguedad":"2026","telefono":"","monto":35274.32,"estado":"sin-activar","notas":""},{"id":200,"nombre":"ROLANDI CELIA","nroCliente":"200","antiguedad":"2026","telefono":"","monto":33339.75,"estado":"sin-activar","notas":""},{"id":532,"nombre":"GONZALEZ CRISTIAN","nroCliente":"532","antiguedad":"2026","telefono":"","monto":31931.94,"estado":"sin-activar","notas":""},{"id":3,"nombre":"CAGLIERIS OMAR","nroCliente":"3","antiguedad":"2025","telefono":"5493492302681","monto":30061.61,"estado":"sin-activar","notas":""},{"id":64,"nombre":"DEPETRIS MAXIMILIANO","nroCliente":"64","antiguedad":"2026","telefono":"","monto":29777.05,"estado":"sin-activar","notas":""},{"id":442,"nombre":"GARCIA DARIO","nroCliente":"442","antiguedad":"2026","telefono":"5493493402578","monto":29724.86,"estado":"sin-activar","notas":""},{"id":162,"nombre":"ARDILES HERNAN","nroCliente":"162","antiguedad":"2026","telefono":"5493426314001","monto":29589.25,"estado":"sin-activar","notas":""},{"id":15,"nombre":"ARDILES CLAUDIO","nroCliente":"15","antiguedad":"2026","telefono":"","monto":26755.83,"estado":"sin-activar","notas":""},{"id":49,"nombre":"DOMINGO FAUSTINO SARMIENTO 382","nroCliente":"49","antiguedad":"2026","telefono":"","monto":25736.24,"estado":"sin-activar","notas":""},{"id":28,"nombre":"BARRERA LUIS MIGUEL","nroCliente":"28","antiguedad":"2026","telefono":"","monto":24850.36,"estado":"sin-activar","notas":""},{"id":37,"nombre":"EESOPI 3023 SAN JOSE DE CALASANZ","nroCliente":"37","antiguedad":"2026","telefono":"","monto":24400,"estado":"sin-activar","notas":""},{"id":661,"nombre":"GENTINETI GUSTAVO","nroCliente":"661","antiguedad":"2024","telefono":"","monto":24087.46,"estado":"sin-activar","notas":""},{"id":768,"nombre":"REY MARISA","nroCliente":"768","antiguedad":"2026","telefono":"","monto":23188.48,"estado":"sin-activar","notas":""},{"id":395,"nombre":"GARCIA RAMON","nroCliente":"395","antiguedad":"2025","telefono":"","monto":21144.58,"estado":"sin-activar","notas":""},{"id":1036,"nombre":"RUIZ","nroCliente":"1036","antiguedad":"2026","telefono":"","monto":20519.8,"estado":"sin-activar","notas":""},{"id":839,"nombre":"MAPELLI HUGO","nroCliente":"839","antiguedad":"2025","telefono":"","monto":19501.9,"estado":"sin-activar","notas":""},{"id":68,"nombre":"ARCE SERGIO","nroCliente":"68","antiguedad":"2024","telefono":"","monto":19374.12,"estado":"sin-activar","notas":""},{"id":1003,"nombre":"QUIROGA MAXI","nroCliente":"1003","antiguedad":"2025","telefono":"","monto":18691.22,"estado":"sin-activar","notas":""},{"id":673,"nombre":"ERARD JOSE","nroCliente":"673","antiguedad":"historico","telefono":"","monto":16272.38,"estado":"sin-activar","notas":""},{"id":773,"nombre":"RIOS SEBASTIAN","nroCliente":"773","antiguedad":"historico","telefono":"","monto":15955.81,"estado":"sin-activar","notas":""},{"id":78,"nombre":"MAPELLI PABLO","nroCliente":"78","antiguedad":"2024","telefono":"","monto":14001.44,"estado":"sin-activar","notas":""},{"id":314,"nombre":"SCHAAB OMAR","nroCliente":"314","antiguedad":"2026","telefono":"","monto":13217.75,"estado":"sin-activar","notas":""},{"id":695,"nombre":"ALESANDRIA RODRIGO","nroCliente":"695","antiguedad":"2025","telefono":"","monto":12401.5,"estado":"sin-activar","notas":""},{"id":300,"nombre":"RIKERT JORGE","nroCliente":"300","antiguedad":"historico","telefono":"","monto":11791.21,"estado":"sin-activar","notas":""},{"id":358,"nombre":"GENTINETTI POCHI","nroCliente":"358","antiguedad":"2026","telefono":"","monto":11501.17,"estado":"sin-activar","notas":""},{"id":514,"nombre":"GUTIERREZ MARIANO","nroCliente":"514","antiguedad":"historico","telefono":"","monto":11365.63,"estado":"sin-activar","notas":""},{"id":876,"nombre":"VICEDO RICO MONICA","nroCliente":"876","antiguedad":"2025","telefono":"","monto":9677.3,"estado":"sin-activar","notas":""},{"id":155,"nombre":"BILCHE FEDERICO","nroCliente":"155","antiguedad":"2025","telefono":"","monto":9116.25,"estado":"sin-activar","notas":""},{"id":225,"nombre":"CLAUSEN DAMIAN","nroCliente":"225","antiguedad":"2026","telefono":"","monto":8524.69,"estado":"sin-activar","notas":""},{"id":560,"nombre":"SOBRERO JESICA","nroCliente":"560","antiguedad":"2025","telefono":"","monto":8005.65,"estado":"sin-activar","notas":""},{"id":1019,"nombre":"CARNERO LORE","nroCliente":"1019","antiguedad":"2025","telefono":"5493426113813","monto":7200,"estado":"sin-activar","notas":""},{"id":244,"nombre":"LUCIANO MAURO","nroCliente":"244","antiguedad":"2026","telefono":"","monto":6708,"estado":"sin-activar","notas":""},{"id":183,"nombre":"VALDEMARIN RAUL PEDRO JOSE","nroCliente":"183","antiguedad":"2026","telefono":"","monto":6113.85,"estado":"sin-activar","notas":""},{"id":1012,"nombre":"ANTHONIOZ ROSA","nroCliente":"1012","antiguedad":"2025","telefono":"5493492584201","monto":5691.03,"estado":"sin-activar","notas":""},{"id":698,"nombre":"GALFRE HERNAN","nroCliente":"698","antiguedad":"2024","telefono":"5493426314001","monto":5482.37,"estado":"sin-activar","notas":""},{"id":762,"nombre":"QUINTEROS NELLY","nroCliente":"762","antiguedad":"2026","telefono":"","monto":5191.78,"estado":"sin-activar","notas":""},{"id":478,"nombre":"ÃAÃES CRISTIAN","nroCliente":"478","antiguedad":"historico","telefono":"","monto":1120.08,"estado":"sin-activar","notas":""}];
+const DEUDORES_INICIALES = [{"id":382,"nombre":"FASINO HORACIO","nroCliente":"382","antiguedad":"2026","telefono":"","monto":1067759.33,"estado":"sin-activar","notas":""},{"id":124,"nombre":"MONDINO NATALIA","nroCliente":"124","antiguedad":"2026","telefono":"","monto":663982.06,"estado":"sin-activar","notas":""},{"id":806,"nombre":"RAMALLO MARTIN","nroCliente":"806","antiguedad":"2024","telefono":"","monto":641639.23,"estado":"sin-activar","notas":""},{"id":224,"nombre":"BERTONI RUBEN","nroCliente":"224","antiguedad":"2026","telefono":"","monto":567982.82,"estado":"sin-activar","notas":""},{"id":430,"nombre":"BRAVO VANESA","nroCliente":"430","antiguedad":"2026","telefono":"","monto":549999.99,"estado":"sin-activar","notas":""},{"id":70,"nombre":"MARCHETTI HECTOR","nroCliente":"70","antiguedad":"2026","telefono":"","monto":506628.65,"estado":"sin-activar","notas":""},{"id":1,"nombre":"ROSSI MARTIN","nroCliente":"1","antiguedad":"2026","telefono":"5493492596439","monto":486632.66,"estado":"sin-activar","notas":""},{"id":30,"nombre":"CAGLIERIS NELLY","nroCliente":"30","antiguedad":"2026","telefono":"5493492302681","monto":350000,"estado":"sin-activar","notas":""},{"id":827,"nombre":"ANTONIOZ MARTA","nroCliente":"827","antiguedad":"2026","telefono":"","monto":313153.71,"estado":"sin-activar","notas":""},{"id":122,"nombre":"PORPORATO RENE","nroCliente":"122","antiguedad":"2026","telefono":"5493492583713","monto":259501.16,"estado":"sin-activar","notas":""},{"id":712,"nombre":"ERARD MIGUEL","nroCliente":"712","antiguedad":"2026","telefono":"","monto":248661.39,"estado":"sin-activar","notas":""},{"id":745,"nombre":"OVENA JORGE","nroCliente":"745","antiguedad":"2026","telefono":"5493492627721","monto":247278.88,"estado":"sin-activar","notas":""},{"id":761,"nombre":"IMHOF CARLOS","nroCliente":"761","antiguedad":"2025","telefono":"","monto":243035.3,"estado":"sin-activar","notas":""},{"id":992,"nombre":"ROSOTO CARLOS","nroCliente":"992","antiguedad":"2026","telefono":"","monto":212542.06,"estado":"sin-activar","notas":""},{"id":93,"nombre":"ROSSI ALEJANDRA","nroCliente":"93","antiguedad":"2024","telefono":"5493492592546","monto":208773.36,"estado":"sin-activar","notas":""},{"id":274,"nombre":"FAULKNER NAZARENO","nroCliente":"274","antiguedad":"2025","telefono":"5493492623806","monto":201703.85,"estado":"sin-activar","notas":""},{"id":13,"nombre":"CORAGLIA ARIEL","nroCliente":"13","antiguedad":"2026","telefono":"5493492626975","monto":182790.47,"estado":"sin-activar","notas":""},{"id":955,"nombre":"PICATTO MARIO","nroCliente":"955","antiguedad":"2026","telefono":"5493492596439","monto":164392.1,"estado":"sin-activar","notas":""},{"id":969,"nombre":"TORTA MAURO","nroCliente":"969","antiguedad":"2026","telefono":"5493492609681","monto":158374.05,"estado":"sin-activar","notas":""},{"id":250,"nombre":"TOLEDO VICTOR","nroCliente":"250","antiguedad":"2026","telefono":"","monto":154504.39,"estado":"sin-activar","notas":""},{"id":980,"nombre":"COMUNA DE COLONIA ANITA","nroCliente":"980","antiguedad":"2026","telefono":"","monto":154471.26,"estado":"sin-activar","notas":""},{"id":31,"nombre":"MALETTO LIDNEY E HIJOS","nroCliente":"31","antiguedad":"2026","telefono":"","monto":146600.88,"estado":"sin-activar","notas":""},{"id":809,"nombre":"CELIZ LUCAS","nroCliente":"809","antiguedad":"2025","telefono":"","monto":138285.32,"estado":"sin-activar","notas":""},{"id":622,"nombre":"MARTINO DARDO","nroCliente":"622","antiguedad":"2026","telefono":"5493492584159","monto":135610.73,"estado":"sin-activar","notas":""},{"id":708,"nombre":"LEIVA LELO","nroCliente":"708","antiguedad":"2024","telefono":"","monto":128164.52,"estado":"sin-activar","notas":""},{"id":89,"nombre":"VAZQUEZ DIEGO","nroCliente":"89","antiguedad":"2025","telefono":"","monto":127102.88,"estado":"sin-activar","notas":""},{"id":1042,"nombre":"MASUERO JUANI","nroCliente":"1042","antiguedad":"2026","telefono":"","monto":109147.2,"estado":"sin-activar","notas":""},{"id":364,"nombre":"SALUSSO EDGAR","nroCliente":"364","antiguedad":"2026","telefono":"","monto":91697.71,"estado":"sin-activar","notas":""},{"id":318,"nombre":"ULMAN JOSE","nroCliente":"318","antiguedad":"2026","telefono":"","monto":90461.25,"estado":"sin-activar","notas":""},{"id":684,"nombre":"MASUERO EMANUEL","nroCliente":"684","antiguedad":"2025","telefono":"","monto":86082.08,"estado":"sin-activar","notas":""},{"id":114,"nombre":"STEFANETTO JUDITH","nroCliente":"114","antiguedad":"2026","telefono":"","monto":79624.21,"estado":"sin-activar","notas":""},{"id":96,"nombre":"ARDILES CRUZ","nroCliente":"96","antiguedad":"historico","telefono":"","monto":77206.11,"estado":"sin-activar","notas":""},{"id":508,"nombre":"BOMBEROS VOLUNTARIOS RAMONA","nroCliente":"508","antiguedad":"2026","telefono":"","monto":76596.91,"estado":"sin-activar","notas":""},{"id":664,"nombre":"POPE","nroCliente":"664","antiguedad":"2026","telefono":"","monto":74466.27,"estado":"sin-activar","notas":""},{"id":378,"nombre":"OCOCHA","nroCliente":"378","antiguedad":"2026","telefono":"5493492411762","monto":70420.13,"estado":"sin-activar","notas":""},{"id":256,"nombre":"DEROTIER IVAN","nroCliente":"256","antiguedad":"historico","telefono":"","monto":69730.82,"estado":"sin-activar","notas":""},{"id":566,"nombre":"RUIZ AXEL","nroCliente":"566","antiguedad":"2026","telefono":"","monto":66520.87,"estado":"sin-activar","notas":""},{"id":348,"nombre":"MASUERO EMILIANO","nroCliente":"348","antiguedad":"2026","telefono":"","monto":60917.12,"estado":"sin-activar","notas":""},{"id":901,"nombre":"GUILLEN VERONICA","nroCliente":"901","antiguedad":"2026","telefono":"","monto":59519.69,"estado":"sin-activar","notas":""},{"id":242,"nombre":"RAMONA HOGAR","nroCliente":"242","antiguedad":"2026","telefono":"","monto":56038.25,"estado":"sin-activar","notas":""},{"id":41,"nombre":"PEIRETTI RAUL","nroCliente":"41","antiguedad":"2026","telefono":"5493492576499","monto":51311.96,"estado":"sin-activar","notas":""},{"id":184,"nombre":"FRANCO RICARDO","nroCliente":"184","antiguedad":"2024","telefono":"5493491414970","monto":51311.56,"estado":"sin-activar","notas":""},{"id":1016,"nombre":"GUTIERREZ SILVINA","nroCliente":"1016","antiguedad":"2025","telefono":"","monto":51191.05,"estado":"sin-activar","notas":""},{"id":696,"nombre":"ANDERMATTEN AGUSTIN","nroCliente":"696","antiguedad":"2026","telefono":"","monto":50618.47,"estado":"sin-activar","notas":""},{"id":25,"nombre":"PEIRETTI HECTOR","nroCliente":"25","antiguedad":"2026","telefono":"","monto":50617.32,"estado":"sin-activar","notas":""},{"id":1001,"nombre":"CARBALLO JAVIER","nroCliente":"1001","antiguedad":"2025","telefono":"","monto":50438.43,"estado":"sin-activar","notas":""},{"id":513,"nombre":"PLATINI MATIAS","nroCliente":"513","antiguedad":"2025","telefono":"","monto":50337.4,"estado":"sin-activar","notas":""},{"id":873,"nombre":"DIAZ DANTE","nroCliente":"873","antiguedad":"2026","telefono":"","monto":45267.32,"estado":"sin-activar","notas":""},{"id":486,"nombre":"LEDESMA JUAN","nroCliente":"486","antiguedad":"2025","telefono":"","monto":43500.78,"estado":"sin-activar","notas":""},{"id":932,"nombre":"RICO MONICA","nroCliente":"932","antiguedad":"2025","telefono":"5493491698196","monto":43500,"estado":"sin-activar","notas":""},{"id":33,"nombre":"ALESSANDRIA CARLOS","nroCliente":"33","antiguedad":"2026","telefono":"","monto":42364.8,"estado":"sin-activar","notas":""},{"id":35,"nombre":"ANDERMATTEN CARLOS","nroCliente":"35","antiguedad":"2024","telefono":"","monto":38949.21,"estado":"sin-activar","notas":""},{"id":55,"nombre":"ARMANDO MARIO","nroCliente":"55","antiguedad":"2026","telefono":"","monto":35274.32,"estado":"sin-activar","notas":""},{"id":200,"nombre":"ROLANDI CELIA","nroCliente":"200","antiguedad":"2026","telefono":"","monto":33339.75,"estado":"sin-activar","notas":""},{"id":532,"nombre":"GONZALEZ CRISTIAN","nroCliente":"532","antiguedad":"2026","telefono":"","monto":31931.94,"estado":"sin-activar","notas":""},{"id":3,"nombre":"CAGLIERIS OMAR","nroCliente":"3","antiguedad":"2025","telefono":"5493492302681","monto":30061.61,"estado":"sin-activar","notas":""},{"id":64,"nombre":"DEPETRIS MAXIMILIANO","nroCliente":"64","antiguedad":"2026","telefono":"","monto":29777.05,"estado":"sin-activar","notas":""},{"id":442,"nombre":"GARCIA DARIO","nroCliente":"442","antiguedad":"2026","telefono":"5493493402578","monto":29724.86,"estado":"sin-activar","notas":""},{"id":162,"nombre":"ARDILES HERNAN","nroCliente":"162","antiguedad":"2026","telefono":"5493426314001","monto":29589.25,"estado":"sin-activar","notas":""},{"id":15,"nombre":"ARDILES CLAUDIO","nroCliente":"15","antiguedad":"2026","telefono":"","monto":26755.83,"estado":"sin-activar","notas":""},{"id":49,"nombre":"DOMINGO FAUSTINO SARMIENTO 382","nroCliente":"49","antiguedad":"2026","telefono":"","monto":25736.24,"estado":"sin-activar","notas":""},{"id":28,"nombre":"BARRERA LUIS MIGUEL","nroCliente":"28","antiguedad":"2026","telefono":"","monto":24850.36,"estado":"sin-activar","notas":""},{"id":37,"nombre":"EESOPI 3023 SAN JOSE DE CALASANZ","nroCliente":"37","antiguedad":"2026","telefono":"","monto":24400,"estado":"sin-activar","notas":""},{"id":661,"nombre":"GENTINETI GUSTAVO","nroCliente":"661","antiguedad":"2024","telefono":"","monto":24087.46,"estado":"sin-activar","notas":""},{"id":768,"nombre":"REY MARISA","nroCliente":"768","antiguedad":"2026","telefono":"","monto":23188.48,"estado":"sin-activar","notas":""},{"id":395,"nombre":"GARCIA RAMON","nroCliente":"395","antiguedad":"2025","telefono":"","monto":21144.58,"estado":"sin-activar","notas":""},{"id":1036,"nombre":"RUIZ","nroCliente":"1036","antiguedad":"2026","telefono":"","monto":20519.8,"estado":"sin-activar","notas":""},{"id":839,"nombre":"MAPELLI HUGO","nroCliente":"839","antiguedad":"2025","telefono":"","monto":19501.9,"estado":"sin-activar","notas":""},{"id":68,"nombre":"ARCE SERGIO","nroCliente":"68","antiguedad":"2024","telefono":"","monto":19374.12,"estado":"sin-activar","notas":""},{"id":1003,"nombre":"QUIROGA MAXI","nroCliente":"1003","antiguedad":"2025","telefono":"","monto":18691.22,"estado":"sin-activar","notas":""},{"id":673,"nombre":"ERARD JOSE","nroCliente":"673","antiguedad":"historico","telefono":"","monto":16272.38,"estado":"sin-activar","notas":""},{"id":773,"nombre":"RIOS SEBASTIAN","nroCliente":"773","antiguedad":"historico","telefono":"","monto":15955.81,"estado":"sin-activar","notas":""},{"id":78,"nombre":"MAPELLI PABLO","nroCliente":"78","antiguedad":"2024","telefono":"","monto":14001.44,"estado":"sin-activar","notas":""},{"id":314,"nombre":"SCHAAB OMAR","nroCliente":"314","antiguedad":"2026","telefono":"","monto":13217.75,"estado":"sin-activar","notas":""},{"id":695,"nombre":"ALESANDRIA RODRIGO","nroCliente":"695","antiguedad":"2025","telefono":"","monto":12401.5,"estado":"sin-activar","notas":""},{"id":300,"nombre":"RIKERT JORGE","nroCliente":"300","antiguedad":"historico","telefono":"","monto":11791.21,"estado":"sin-activar","notas":""},{"id":358,"nombre":"GENTINETTI POCHI","nroCliente":"358","antiguedad":"2026","telefono":"","monto":11501.17,"estado":"sin-activar","notas":""},{"id":514,"nombre":"GUTIERREZ MARIANO","nroCliente":"514","antiguedad":"historico","telefono":"","monto":11365.63,"estado":"sin-activar","notas":""},{"id":876,"nombre":"VICEDO RICO MONICA","nroCliente":"876","antiguedad":"2025","telefono":"","monto":9677.3,"estado":"sin-activar","notas":""},{"id":155,"nombre":"BILCHE FEDERICO","nroCliente":"155","antiguedad":"2025","telefono":"","monto":9116.25,"estado":"sin-activar","notas":""},{"id":225,"nombre":"CLAUSEN DAMIAN","nroCliente":"225","antiguedad":"2026","telefono":"","monto":8524.69,"estado":"sin-activar","notas":""},{"id":560,"nombre":"SOBRERO JESICA","nroCliente":"560","antiguedad":"2025","telefono":"","monto":8005.65,"estado":"sin-activar","notas":""},{"id":1019,"nombre":"CARNERO LORE","nroCliente":"1019","antiguedad":"2025","telefono":"5493426113813","monto":7200,"estado":"sin-activar","notas":""},{"id":244,"nombre":"LUCIANO MAURO","nroCliente":"244","antiguedad":"2026","telefono":"","monto":6708,"estado":"sin-activar","notas":""},{"id":183,"nombre":"VALDEMARIN RAUL PEDRO JOSE","nroCliente":"183","antiguedad":"2026","telefono":"","monto":6113.85,"estado":"sin-activar","notas":""},{"id":1012,"nombre":"ANTHONIOZ ROSA","nroCliente":"1012","antiguedad":"2025","telefono":"5493492584201","monto":5691.03,"estado":"sin-activar","notas":""},{"id":698,"nombre":"GALFRE HERNAN","nroCliente":"698","antiguedad":"2024","telefono":"5493426314001","monto":5482.37,"estado":"sin-activar","notas":""},{"id":762,"nombre":"QUINTEROS NELLY","nroCliente":"762","antiguedad":"2026","telefono":"","monto":5191.78,"estado":"sin-activar","notas":""},{"id":478,"nombre":"ÑAÑES CRISTIAN","nroCliente":"478","antiguedad":"historico","telefono":"","monto":1120.08,"estado":"sin-activar","notas":""}];
 let clientes = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || DEUDORES_INICIALES || [];
 let modalTelefono = '';
 let modalCliente = null;
 
-window.addEventListener('load', () => { render(); setFechaActual(); });
+const BACKUP_KEY = 'pintureriaCobranzas_ultimo_backup';
+
+window.addEventListener('load', () => { render(); setFechaActual(); chequearBackup(); });
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+// Teléfonos que comparten más de un cliente (suele ser un error del matcher)
+function telefonosRepetidos() {
+  const cuenta = {};
+  clientes.forEach(c => { const t = limpiarTel(c.telefono); if (t) cuenta[t] = (cuenta[t] || 0) + 1; });
+  return new Set(Object.keys(cuenta).filter(t => cuenta[t] > 1));
+}
+
+function nombreDe(c) {
+  // Infocor guarda "APELLIDO NOMBRE": para el saludo va el nombre en minúscula con inicial mayúscula
+  const p = (c.nombre || '').trim().split(/\s+/).filter(Boolean);
+  if (p.length < 2 || p.length > 3 || p.some(w => /[\d.]/.test(w) || w.length <= 2)) return '';
+  return p[1].charAt(0).toUpperCase() + p[1].slice(1).toLowerCase();
+}
 
 function fmt(monto) {
   return '$' + Number(monto || 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -244,8 +282,16 @@ function parseMonto(v) {
 const WSP_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 20.5l1.6-5.2A8.5 8.5 0 1 1 21 11.5z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.5-2-1-1 .8c-1-.4-2-1.4-2.4-2.4l.8-1-1-2z" fill="currentColor" stroke="none"/></svg>';
 
 function guardar() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(clientes));
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(clientes)); }
+  catch (e) { toast('No se pudo guardar. Descargá un backup ya.'); }
   render();
+  chequearBackup();
+}
+
+function vaciar() {
+  if (!confirm(`Se borran los ${clientes.length} clientes de este navegador. Descargá un backup antes si no lo hiciste. ¿Seguimos?`)) return;
+  clientes = [];
+  guardar();
 }
 
 function agregarCliente() {
@@ -276,8 +322,8 @@ function limpiarTel(tel) {
 }
 
 function generarMensaje(c) {
-  const primerNombre = (c.nombre || '').split(' ')[0] || '[Nombre]';
-  return `Hola ${primerNombre}, ¿cómo va? Te escribo de Pinturería Adrián. Estuvimos ordenando las cuentas y nos quedó un saldo pendiente tuyo de ${fmt(c.monto)}, Te dejo las opciones para el pago:
+  const nom = nombreDe(c);
+  return `Hola${nom ? ' ' + nom : ''}, ¿cómo va? Te escribo de Pinturería Adrián. Estuvimos ordenando las cuentas y nos quedó un saldo pendiente tuyo de ${fmt(c.monto)}, Te dejo las opciones para el pago:
 
 EFECTIVO: cuando quieras te esperamos en el local.
 
@@ -303,6 +349,10 @@ function enviarWsp(id) {
   if (!c) return;
   const tel = limpiarTel(c.telefono);
   if (!tel) { abrirWsp(c); return; } // sin teléfono: modal para copiar el mensaje
+  if (telefonosRepetidos().has(tel)) {
+    const otros = clientes.filter(o => o.id !== c.id && limpiarTel(o.telefono) === tel).map(o => o.nombre).join(', ');
+    if (!confirm(`Este teléfono también está cargado en: ${otros}.\n¿Mandar igual el mensaje de ${c.nombre}?`)) return;
+  }
   window.open(`https://wa.me/${tel}?text=${encodeURIComponent(generarMensaje(c))}`, '_blank');
   if (c.estado === 'sin-activar') {
     setTimeout(() => {
@@ -370,11 +420,16 @@ function render() {
   const pend = clientes.filter(c => c.estado !== 'cobrado');
   document.getElementById('subtitulo').textContent = `${pend.length} clientes con deuda pendiente · ${fmt(pend.reduce((a, c) => a + (Number(c.monto) || 0), 0))}`;
 
+  const repetidos = telefonosRepetidos();
+  const filtroTel = document.getElementById('filtroTel').value;
+
   const filtrados = clientes.filter(c => {
     const matchBuscar = !buscar || (c.nombre || '').toLowerCase().includes(buscar) || (c.nroCliente || '').toLowerCase().includes(buscar);
     const matchEst = !filtroEstado || c.estado === filtroEstado;
     const matchAnt = !filtroAnt || c.antiguedad === filtroAnt;
-    return matchBuscar && matchEst && matchAnt;
+    const tel = limpiarTel(c.telefono);
+    const matchTel = !filtroTel || (filtroTel === 'sin' && !tel) || (filtroTel === 'repetido' && repetidos.has(tel));
+    return matchBuscar && matchEst && matchAnt && matchTel;
   });
 
   if (filtrados.length === 0) {
@@ -385,7 +440,7 @@ function render() {
   tbody.innerHTML = filtrados.map(c => {
     const est = ESTADOS[c.estado] || ESTADOS['sin-activar'];
     const ant = ANTIGUEDAD[c.antiguedad] || ANTIGUEDAD['2026'];
-    return `<tr><td class="editable" style="width:80px; min-width:70px;"><input type="text" value="${escapeHtml(c.nroCliente)}" onchange="actualizar(${c.id}, 'nroCliente', this.value)"></td><td class="editable" style="min-width:200px;"><input type="text" value="${escapeHtml(c.nombre)}" onchange="actualizar(${c.id}, 'nombre', this.value)"></td><td><select class="ant-badge ${ant.clase}" onchange="actualizar(${c.id}, 'antiguedad', this.value)" style="border:none; cursor:pointer;">${Object.entries(ANTIGUEDAD).map(([k,v]) => `<option value="${k}" ${c.antiguedad===k?'selected':''}>${v.label}</option>`).join('')}</select></td><td class="editable" style="width:150px; min-width:140px;"><input type="text" value="${escapeHtml(c.telefono)}" onchange="actualizar(${c.id}, 'telefono', this.value)" placeholder="Cargar..."></td><td class="monto editable" style="width:160px; min-width:150px;"><input type="text" inputmode="decimal" value="${fmtNum(c.monto)}" onfocus="this.select()" onchange="actualizar(${c.id}, 'monto', this.value)" style="text-align:right;"></td><td><select class="status-select ${est.clase}" onchange="actualizar(${c.id}, 'estado', this.value)">${Object.entries(ESTADOS).map(([k,v]) => `<option value="${k}" ${c.estado===k?'selected':''}>${v.label}</option>`).join('')}</select></td><td class="editable" style="min-width:140px;"><input type="text" value="${escapeHtml(c.notas)}" onchange="actualizar(${c.id}, 'notas', this.value)" placeholder="..."></td><td style="text-align:center; white-space:nowrap;"><button class="btn btn-wsp" title="${c.telefono ? 'Enviar cobranza por WhatsApp' : 'Sin teléfono: abre el mensaje para copiar'}" onclick="enviarWsp(${c.id})">${WSP_ICON} WhatsApp</button><button class="btn btn-danger" onclick="eliminarCliente(${c.id})">✕</button></td></tr>`;
+    return `<tr><td class="editable" style="width:80px; min-width:70px;"><input type="text" value="${escapeHtml(c.nroCliente)}" onchange="actualizar(${c.id}, 'nroCliente', this.value)"></td><td class="editable" style="min-width:200px;"><input type="text" value="${escapeHtml(c.nombre)}" onchange="actualizar(${c.id}, 'nombre', this.value)"></td><td><select class="ant-badge ${ant.clase}" onchange="actualizar(${c.id}, 'antiguedad', this.value)" style="border:none; cursor:pointer;">${Object.entries(ANTIGUEDAD).map(([k,v]) => `<option value="${k}" ${c.antiguedad===k?'selected':''}>${v.label}</option>`).join('')}</select></td><td class="editable" style="width:150px; min-width:140px;"><input type="text" value="${escapeHtml(c.telefono)}" onchange="actualizar(${c.id}, 'telefono', this.value)" placeholder="Cargar...">${repetidos.has(limpiarTel(c.telefono)) ? '<span class="dup" title="Este teléfono está cargado en más de un cliente">⚠</span>' : ''}</td><td class="monto editable" style="width:160px; min-width:150px;"><input type="text" inputmode="decimal" value="${fmtNum(c.monto)}" onfocus="this.select()" onchange="actualizar(${c.id}, 'monto', this.value)" style="text-align:right;"></td><td><select class="status-select ${est.clase}" onchange="actualizar(${c.id}, 'estado', this.value)">${Object.entries(ESTADOS).map(([k,v]) => `<option value="${k}" ${c.estado===k?'selected':''}>${v.label}</option>`).join('')}</select></td><td class="editable" style="min-width:140px;"><input type="text" value="${escapeHtml(c.notas)}" onchange="actualizar(${c.id}, 'notas', this.value)" placeholder="..."></td><td style="text-align:center; white-space:nowrap;"><button class="btn btn-wsp" title="${c.telefono ? 'Enviar cobranza por WhatsApp' : 'Sin teléfono: abre el mensaje para copiar'}" onclick="enviarWsp(${c.id})">${WSP_ICON} WhatsApp</button><button class="btn btn-danger" onclick="eliminarCliente(${c.id})">✕</button></td></tr>`;
   }).join('');
 }
 
@@ -394,12 +449,18 @@ function escapeHtml(str) {
   return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
 
+function decodificarCSV(buf) {
+  // Infocor exporta en latin-1; si el archivo es UTF-8 válido se respeta
+  try { return new TextDecoder('utf-8', { fatal: true }).decode(buf); }
+  catch (e) { return new TextDecoder('windows-1252').decode(buf); }
+}
+
 function importarCSV(file) {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = function(e) {
     try {
-      const lines = e.target.result.split(/\r?\n/);
+      const lines = decodificarCSV(e.target.result).split(/\r?\n/);
       const nuevos = [];
       let current = null;
       for (const line of lines) {
@@ -415,12 +476,13 @@ function importarCSV(file) {
           current = null;
         }
       }
-      if (nuevos.length > 0) mergearClientes(nuevos);
+      if (nuevos.length === 0) { alert('No encontré clientes con saldo en el archivo. ¿Es el CSV de cuentas corrientes de Infocor?'); return; }
+      mergearClientes(nuevos);
     } catch (err) {
       alert('Error: ' + err.message);
     }
   };
-  reader.readAsText(file, 'UTF-8');
+  reader.readAsArrayBuffer(file);
   document.getElementById('fileInput').value = '';
 }
 
@@ -429,29 +491,92 @@ function mergearClientes(nuevos) {
   nuevos.forEach(c => { nuevosIdx[c.nro] = c; });
   const actualesIdx = {};
   clientes.forEach(c => { if (c.nroCliente) actualesIdx[c.nroCliente] = c; });
-  
-  let actualizados = 0, agregados = 0, marcadosCobrados = 0;
-  nuevos.forEach(n => {
-    const existente = actualesIdx[n.nro];
-    if (existente) {
-      existente.monto = n.monto;
-      if (existente.estado === 'cobrado' && n.monto > 0) existente.estado = 'sin-activar';
-      actualizados++;
-    } else {
-      clientes.push({ id: Date.now() + Math.random(), nombre: n.nombre, nroCliente: n.nro, telefono: '', monto: n.monto, antiguedad: '2026', estado: 'sin-activar', notas: 'Nuevo del último import' });
-      agregados++;
-    }
+
+  const aActualizar = nuevos.filter(n => actualesIdx[n.nro]);
+  const aAgregar = nuevos.filter(n => !actualesIdx[n.nro]);
+  const sinSaldo = clientes.filter(c => c.nroCliente && !nuevosIdx[c.nroCliente] && c.estado !== 'cobrado');
+  // Los que ya no figuran: solo se pasan a cobrado los que no tenían una gestión especial
+  const aCobrar = sinSaldo.filter(c => c.estado === 'sin-activar' || c.estado === 'contactado');
+  const conGestion = sinSaldo.filter(c => c.estado === 'acuerdo' || c.estado === 'difiere');
+  const reabiertos = aActualizar.filter(n => actualesIdx[n.nro].estado === 'cobrado');
+  // Cobrados de una carga anterior que siguen sin deuda nueva: se eliminan de la lista
+  const aEliminar = clientes.filter(c => c.estado === 'cobrado' && c.nroCliente && !nuevosIdx[c.nroCliente]);
+  const totalNuevo = nuevos.reduce((a, n) => a + n.monto, 0);
+
+  let msg = `Vista previa de la importación\n\n` +
+    `• ${aActualizar.length} clientes con saldo actualizado (${reabiertos.length} vuelven a deuda desde "cobrado")\n` +
+    `• ${aAgregar.length} clientes nuevos\n` +
+    `• ${aCobrar.length} ya no figuran con saldo → pasan a "Cobrado"\n` +
+    `• ${conGestion.length} ya no figuran pero tienen acuerdo/difiere → se mantienen (revisalos)\n` +
+    `• ${aEliminar.length} ya estaban cobrados de una carga anterior y siguen sin deuda → se eliminan\n\n` +
+    `Deuda total del archivo: ${fmt(totalNuevo)}`;
+  const pendientes = clientes.filter(c => c.estado !== 'cobrado').length;
+  if (pendientes >= 10 && aCobrar.length > pendientes * 0.4) {
+    msg += `\n\n⚠ Esto marcaría como cobrado a más del 40% de la cartera. Revisá que sea el archivo completo.`;
+  }
+  msg += `\n\n¿Aplicar?`;
+  if (!confirm(msg)) return;
+
+  aActualizar.forEach(n => {
+    const c = actualesIdx[n.nro];
+    c.monto = n.monto;
+    if (c.estado === 'cobrado') c.estado = 'sin-activar';
   });
-  
-  clientes.forEach(c => {
-    if (c.nroCliente && !nuevosIdx[c.nroCliente] && c.estado !== 'cobrado') {
-      c.estado = 'cobrado';
-      marcadosCobrados++;
-    }
+  aAgregar.forEach(n => {
+    clientes.push({ id: Date.now() + Math.random(), nombre: n.nombre, nroCliente: n.nro, telefono: '', monto: n.monto, antiguedad: '2026', estado: 'sin-activar', notas: 'Nuevo del último import' });
   });
+  const idsEliminar = new Set(aEliminar.map(c => c.id));
+  clientes = clientes.filter(c => !idsEliminar.has(c.id));
+  aCobrar.forEach(c => { c.estado = 'cobrado'; });
+  conGestion.forEach(c => { if (!/no figura en Infocor/.test(c.notas || '')) c.notas = ((c.notas || '') + ' · No figura en Infocor (revisar)').replace(/^ · /, ''); });
 
   guardar();
-  alert(`Importado: ${actualizados} actualizados, ${agregados} nuevos, ${marcadosCobrados} marcados como cobrados.`);
+  toast(`Importado: ${aActualizar.length} actualizados, ${aAgregar.length} nuevos, ${aCobrar.length} cobrados, ${aEliminar.length} eliminados.`);
+}
+
+// ---------- backup ----------
+function backup() {
+  const blob = new Blob([JSON.stringify({ version: 2, fecha: new Date().toISOString(), clientes }, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `cobranzas_backup_${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  try { localStorage.setItem(BACKUP_KEY, JSON.stringify({ ts: Date.now(), n: clientes.length })); } catch (e) {}
+  chequearBackup();
+  toast('Backup descargado ✓');
+}
+
+function restaurar(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      const lista = Array.isArray(data) ? data : data.clientes;
+      if (!Array.isArray(lista) || lista.some(c => c.nroCliente === undefined || c.monto === undefined)) throw new Error('formato');
+      if (!confirm(`Se reemplazan los ${clientes.length} clientes actuales por los ${lista.length} del backup. ¿Seguimos?`)) return;
+      clientes = lista;
+      guardar();
+      toast('Backup restaurado ✓');
+    } catch (err) { alert('El archivo no es un backup de cobranzas válido.'); }
+  };
+  reader.readAsText(file);
+  document.getElementById('restoreInput').value = '';
+}
+
+function chequearBackup() {
+  const av = document.getElementById('avisoBackup');
+  if (!av) return;
+  let ult = null;
+  try { ult = JSON.parse(localStorage.getItem(BACKUP_KEY) || 'null'); } catch (e) {}
+  const dias = ult ? Math.floor((Date.now() - ult.ts) / 86400000) : null;
+  if (ult && dias < 7) { av.classList.remove('show'); return; }
+  av.innerHTML = ult
+    ? `Hace ${dias} días que no descargás un backup. Estados y notas viven solo en este navegador. <button class="btn btn-secondary" style="padding:4px 10px;font-size:12px;" onclick="backup()">Descargar backup</button>`
+    : `Estados y notas se guardan solo en este navegador. Descargá un backup para no perderlos. <button class="btn btn-secondary" style="padding:4px 10px;font-size:12px;" onclick="backup()">Descargar backup</button>`;
+  av.classList.add('show');
 }
 
 function exportarCSV() {

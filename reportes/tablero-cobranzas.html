@@ -4,67 +4,103 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tablero de Cobranzas — Pinturería Adrián</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f6f8; color: #1f2937; padding: 24px; line-height: 1.5; }
+  :root {
+    color-scheme: dark;
+    --void:#1b1e24; --panel:#23272f; --panel2:#2a2f38; --line:#343a45; --line2:#434a57;
+    --txt:#eceef2; --txt2:#a0a8b6; --txt3:#7a8291;
+    --saber:#e11d2e; --saber-soft:rgba(225,29,46,.16); --saber-glow:0 0 6px rgba(255,60,70,.9), 0 0 18px rgba(225,29,46,.55);
+    --ok:#4ade80; --okbg:rgba(34,197,94,.14); --bad:#f87171; --badbg:rgba(225,29,46,.18); --warn:#fbbf24; --warnbg:rgba(245,158,11,.14); --info:#7cb2ff; --infobg:rgba(59,130,246,.16);
+    --display:'Chakra Petch', -apple-system, "Segoe UI", sans-serif;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--txt); padding: 24px; line-height: 1.5; min-height: 100vh;
+    background-color: var(--void);
+    background-image:
+      radial-gradient(1px 1px at 12% 18%, rgba(255,255,255,.30) 50%, transparent 51%),
+      radial-gradient(1px 1px at 68% 8%, rgba(255,255,255,.22) 50%, transparent 51%),
+      radial-gradient(1px 1px at 84% 42%, rgba(255,255,255,.26) 50%, transparent 51%),
+      radial-gradient(1px 1px at 33% 64%, rgba(255,255,255,.18) 50%, transparent 51%),
+      radial-gradient(1px 1px at 52% 88%, rgba(255,255,255,.24) 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 91% 76%, rgba(255,210,210,.30) 50%, transparent 51%),
+      radial-gradient(1px 1px at 5% 92%, rgba(255,255,255,.2) 50%, transparent 51%),
+      radial-gradient(ellipse 60% 40% at 50% -10%, rgba(225,29,46,.12), transparent 70%);
+    background-size: 420px 420px, 420px 420px, 420px 420px, 420px 420px, 420px 420px, 420px 420px, 420px 420px, 100% 100%;
+    background-attachment: fixed;
+  }
   .container { max-width: 1500px; margin: 0 auto; }
-  header { background: #1e3a5f; color: white; padding: 20px 28px; border-radius: 12px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
-  header h1 { font-size: 22px; font-weight: 600; }
-  header .subtitle { font-size: 13px; opacity: 0.85; margin-top: 4px; }
-  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px; margin-bottom: 24px; }
-  .kpi { background: white; padding: 18px 22px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border-left: 4px solid #1e3a5f; }
-  .kpi.kpi-red { border-left-color: #dc2626; }
-  .kpi.kpi-yellow { border-left-color: #d97706; }
-  .kpi.kpi-green { border-left-color: #059669; }
-  .kpi.kpi-blue { border-left-color: #2563eb; }
-  .kpi.kpi-grey { border-left-color: #6b7280; }
-  .kpi-label { font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
-  .kpi-value { font-size: 22px; font-weight: 700; margin-top: 4px; color: #111827; }
-  .kpi-sub { font-size: 12px; color: #6b7280; margin-top: 2px; }
-  .toolbar { background: white; padding: 16px 20px; border-radius: 10px; margin-bottom: 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
-  .toolbar input, .toolbar select { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; font-family: inherit; }
+  header { position: relative; background: linear-gradient(180deg, #2a2e36, #22262d); border: 1px solid var(--line); padding: 20px 26px 22px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; overflow: hidden; }
+  header::after { content: ""; position: absolute; left: 0; bottom: 0; height: 2px; width: 100%; background: linear-gradient(90deg, transparent, #ff4d58 12%, #fff1f1 50%, #ff4d58 88%, transparent); box-shadow: var(--saber-glow); transform-origin: left center; animation: ignite .9s cubic-bezier(.2,.7,.2,1) both .15s; }
+  @keyframes ignite { from { transform: scaleX(0); opacity: .4; } to { transform: scaleX(1); opacity: 1; } }
+  header h1 { font-family: var(--display); font-size: 24px; font-weight: 700; letter-spacing: .04em; }
+  header .subtitle { font-size: 13px; color: var(--txt2); margin-top: 2px; }
+  header #fechaActual { color: var(--txt2); }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; margin-bottom: 20px; }
+  .kpi { background: rgba(35,39,47,.92); border: 1px solid var(--line); padding: 16px 20px; border-radius: 10px; border-left: 3px solid var(--txt3); backdrop-filter: blur(4px); }
+  .kpi.kpi-red { border-left-color: var(--saber); }
+  .kpi.kpi-yellow { border-left-color: var(--warn); }
+  .kpi.kpi-green { border-left-color: var(--ok); }
+  .kpi.kpi-blue { border-left-color: var(--info); }
+  .kpi.kpi-grey { border-left-color: var(--txt3); }
+  .kpi-label { font-family: var(--display); font-size: 12px; color: var(--txt2); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
+  .kpi-value { font-family: var(--display); font-size: 24px; font-weight: 700; margin-top: 4px; color: #fff; font-variant-numeric: tabular-nums; }
+  .kpi.kpi-red .kpi-value { text-shadow: 0 0 14px rgba(225,29,46,.45); }
+  .kpi-sub { font-size: 12px; color: var(--txt3); margin-top: 2px; }
+  .toolbar { background: rgba(35,39,47,.92); border: 1px solid var(--line); padding: 14px 16px; border-radius: 10px; margin-bottom: 14px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; backdrop-filter: blur(4px); }
+  .toolbar input, .toolbar select { padding: 8px 12px; border: 1px solid var(--line2); border-radius: 6px; font-size: 14px; font-family: inherit; background: #1b1e24; color: var(--txt); }
   .toolbar input[type="text"] { flex: 1; min-width: 200px; }
-  .btn { padding: 8px 16px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.15s; }
-  .btn-primary { background: #1e3a5f; color: white; }
-  .btn-primary:hover { background: #152744; }
-  .btn-success { background: #059669; color: white; }
-  .btn-success:hover { background: #047857; }
-  .btn-secondary { background: #e5e7eb; color: #374151; }
-  .btn-secondary:hover { background: #d1d5db; }
-  .btn-danger { background: #fee2e2; color: #991b1b; padding: 4px 10px; font-size: 12px; }
-  .btn-danger:hover { background: #fecaca; }
-  .btn-wsp { background: #25d366; color: white; padding: 6px 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; margin: 2px; }
-  .btn-wsp:hover { background: #1ebe57; }
-  table { width: 100%; background: white; border-collapse: collapse; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
-  thead { background: #f3f4f6; position: sticky; top: 0; }
-  th, td { padding: 11px 14px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 13.5px; }
-  th { font-size: 11px; text-transform: uppercase; color: #6b7280; font-weight: 600; letter-spacing: 0.05em; }
-  tr:hover { background: #fafbfc; }
+  .toolbar input::placeholder { color: var(--txt3); }
+  select option { background: #23272f; color: var(--txt); }
+  .btn { padding: 8px 14px; border: 1px solid transparent; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: box-shadow .15s, background .15s, border-color .15s; }
+  .btn-primary { background: var(--saber); color: #fff; }
+  .btn-primary:hover { box-shadow: var(--saber-glow); }
+  .btn-success { background: var(--okbg); color: var(--ok); border-color: rgba(74,222,128,.4); }
+  .btn-success:hover { background: rgba(34,197,94,.24); }
+  .btn-secondary { background: var(--panel2); color: var(--txt); border-color: var(--line2); }
+  .btn-secondary:hover { border-color: #566070; background: #323843; }
+  .btn-danger { background: transparent; color: var(--txt3); border-color: var(--line2); padding: 4px 10px; font-size: 12px; }
+  .btn-danger:hover { color: var(--bad); border-color: rgba(248,113,113,.5); }
+  .btn-wsp { background: #1faa59; color: #fff; padding: 6px 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; margin: 2px; }
+  .btn-wsp:hover { background: #25d366; box-shadow: 0 0 12px rgba(37,211,102,.45); }
+  .btn:focus-visible, input:focus, select:focus, textarea:focus { outline: none; border-color: var(--saber) !important; box-shadow: 0 0 0 1px var(--saber), 0 0 12px rgba(225,29,46,.35); }
+  .tbl-wrap { overflow-x: auto; }
+  table { width: 100%; min-width: 1020px; background: rgba(35,39,47,.92); border: 1px solid var(--line); border-collapse: separate; border-spacing: 0; border-radius: 10px; overflow: hidden; font-variant-numeric: tabular-nums; }
+  thead { background: var(--panel2); position: sticky; top: 0; z-index: 2; }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+  th { font-family: var(--display); font-size: 12px; text-transform: uppercase; color: var(--txt2); font-weight: 600; letter-spacing: .07em; border-bottom: 1px solid var(--line2); }
+  tbody tr:hover td { background: rgba(255,255,255,.03); }
   tr:last-child td { border-bottom: none; }
-  td.editable input { border: none; background: transparent; width: 100%; font-size: 13.5px; padding: 4px; border-radius: 4px; font-family: inherit; }
-  td.editable input:focus { background: #fffbeb; outline: 1px solid #fbbf24; }
-  .monto { font-weight: 600; color: #111827; text-align: right; font-variant-numeric: tabular-nums; }
+  td.editable input { border: 1px solid transparent; background: transparent; width: 100%; font-size: 13.5px; padding: 4px 6px; border-radius: 4px; font-family: inherit; color: var(--txt); }
+  td.editable input:hover { border-color: var(--line2); }
+  td.editable input::placeholder { color: var(--txt3); }
+  .monto { font-weight: 600; text-align: right; }
+  .monto input { color: #fff !important; }
   .status-select { padding: 6px 10px; border-radius: 6px; border: 1px solid; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; }
-  .status-sin-activar { background: #f3f4f6; color: #4b5563; border-color: #d1d5db; }
-  .status-contactado { background: #fef3c7; color: #92400e; border-color: #fbbf24; }
-  .status-acuerdo { background: #dbeafe; color: #1e40af; border-color: #60a5fa; }
-  .status-cobrado { background: #d1fae5; color: #065f46; border-color: #34d399; }
-  .status-difiere { background: #fee2e2; color: #991b1b; border-color: #f87171; }
-  .ant-badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: 700; letter-spacing: 0.03em; }
-  .ant-historico { background: #fee2e2; color: #991b1b; }
-  .ant-2024 { background: #fef3c7; color: #92400e; }
-  .ant-2025 { background: #dbeafe; color: #1e40af; }
-  .ant-2026 { background: #e5e7eb; color: #4b5563; }
-  .empty-state { text-align: center; padding: 40px; color: #9ca3af; }
-  .footer { margin-top: 24px; padding: 16px; text-align: center; color: #9ca3af; font-size: 12px; }
-  .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center; }
+  .status-sin-activar { background: var(--panel2); color: var(--txt2); border-color: var(--line2); }
+  .status-contactado { background: var(--warnbg); color: var(--warn); border-color: rgba(251,191,36,.45); }
+  .status-acuerdo { background: var(--infobg); color: var(--info); border-color: rgba(124,178,255,.45); }
+  .status-cobrado { background: var(--okbg); color: var(--ok); border-color: rgba(74,222,128,.45); }
+  .status-difiere { background: var(--badbg); color: var(--bad); border-color: rgba(248,113,113,.45); }
+  .ant-badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: 700; letter-spacing: .03em; }
+  .ant-historico { background: var(--badbg); color: var(--bad); }
+  .ant-2024 { background: var(--warnbg); color: var(--warn); }
+  .ant-2025 { background: var(--infobg); color: var(--info); }
+  .ant-2026 { background: var(--panel2); color: var(--txt2); }
+  .empty-state { text-align: center; padding: 40px; color: var(--txt3); }
+  .footer { margin-top: 24px; padding: 16px; text-align: center; color: var(--txt3); font-size: 12px; }
+  .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(10,12,16,.7); backdrop-filter: blur(3px); z-index: 100; justify-content: center; align-items: center; }
   .modal-overlay.active { display: flex; }
-  .modal { background: white; padding: 24px; border-radius: 12px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; }
-  .modal h2 { margin-bottom: 16px; font-size: 18px; }
+  .modal { background: var(--panel); border: 1px solid var(--line2); padding: 24px; border-radius: 12px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+  .modal h2 { font-family: var(--display); margin-bottom: 16px; font-size: 18px; letter-spacing: .03em; }
   .modal-body { margin-bottom: 20px; }
-  .modal textarea { width: 100%; min-height: 200px; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-family: inherit; font-size: 13.5px; resize: vertical; }
+  .modal textarea { width: 100%; min-height: 200px; padding: 12px; border: 1px solid var(--line2); border-radius: 6px; font-family: inherit; font-size: 13.5px; resize: vertical; background: #1b1e24; color: var(--txt); }
   .modal-actions { display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap; }
-  @media print { .toolbar, .btn, header { display: none; } }
+  @media (max-width: 800px) { body { padding: 12px; } }
+  @media print { .toolbar, .btn, header { display: none; } body { background: #fff; color: #000; } }
 </style>
 </head>
 <body>
@@ -129,7 +165,7 @@
     <button class="btn btn-secondary" onclick="if(confirm('Borrar todo?')) { localStorage.removeItem(STORAGE_KEY); location.reload(); }">Limpiar</button>
   </div>
 
-  <table>
+  <div class="tbl-wrap"><table>
     <thead>
       <tr>
         <th>N°</th>
@@ -143,7 +179,7 @@
       </tr>
     </thead>
     <tbody id="tbody"></tbody>
-  </table>
+  </table></div>
 
   <div class="footer">
     Datos guardados localmente • Pinturería Adrián © <span id="anio"></span>
@@ -193,6 +229,20 @@ function fmt(monto) {
   return '$' + Number(monto || 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+function fmtNum(monto) {
+  return Number(monto || 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// Acepta "1.067.759,33", "1067759,33" o "1067759.33"
+function parseMonto(v) {
+  let t = String(v ?? '').replace(/[^\d,.\-]/g, '');
+  if (t.includes(',')) t = t.replace(/\./g, '').replace(',', '.');
+  else if (!/^-?\d+\.\d{1,2}$/.test(t)) t = t.replace(/\./g, '');
+  return parseFloat(t) || 0;
+}
+
+const WSP_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 20.5l1.6-5.2A8.5 8.5 0 1 1 21 11.5z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.5-2-1-1 .8c-1-.4-2-1.4-2.4-2.4l.8-1-1-2z" fill="currentColor" stroke="none"/></svg>';
+
 function guardar() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(clientes));
   render();
@@ -212,7 +262,7 @@ function eliminarCliente(id) {
 function actualizar(id, campo, valor) {
   const c = clientes.find(c => c.id === id);
   if (!c) return;
-  if (campo === 'monto') valor = parseFloat(valor) || 0;
+  if (campo === 'monto') valor = parseMonto(valor);
   c[campo] = valor;
   guardar();
 }
@@ -246,6 +296,19 @@ function abrirWsp(cliente) {
   document.getElementById('modalTitulo').textContent = 'Cobranza — ' + cliente.nombre;
   document.getElementById('modalTexto').value = msg;
   document.getElementById('modalMsg').classList.add('active');
+}
+
+function enviarWsp(id) {
+  const c = clientes.find(c => c.id === id);
+  if (!c) return;
+  const tel = limpiarTel(c.telefono);
+  if (!tel) { abrirWsp(c); return; } // sin teléfono: modal para copiar el mensaje
+  window.open(`https://wa.me/${tel}?text=${encodeURIComponent(generarMensaje(c))}`, '_blank');
+  if (c.estado === 'sin-activar') {
+    setTimeout(() => {
+      if (confirm(`¿Marcar a ${c.nombre} como "Contactado"?`)) actualizar(c.id, 'estado', 'contactado');
+    }, 500);
+  }
 }
 
 function cerrarModal() {
@@ -304,6 +367,9 @@ function render() {
   document.getElementById('kpiCobrado').textContent = fmt(cob);
   document.getElementById('kpiCobradoCnt').textContent = cntCob;
 
+  const pend = clientes.filter(c => c.estado !== 'cobrado');
+  document.getElementById('subtitulo').textContent = `${pend.length} clientes con deuda pendiente · ${fmt(pend.reduce((a, c) => a + (Number(c.monto) || 0), 0))}`;
+
   const filtrados = clientes.filter(c => {
     const matchBuscar = !buscar || (c.nombre || '').toLowerCase().includes(buscar) || (c.nroCliente || '').toLowerCase().includes(buscar);
     const matchEst = !filtroEstado || c.estado === filtroEstado;
@@ -319,7 +385,7 @@ function render() {
   tbody.innerHTML = filtrados.map(c => {
     const est = ESTADOS[c.estado] || ESTADOS['sin-activar'];
     const ant = ANTIGUEDAD[c.antiguedad] || ANTIGUEDAD['2026'];
-    return `<tr><td class="editable" style="width:70px;"><input type="text" value="${escapeHtml(c.nroCliente)}" onchange="actualizar(${c.id}, 'nroCliente', this.value)"></td><td class="editable" style="min-width:200px;"><input type="text" value="${escapeHtml(c.nombre)}" onchange="actualizar(${c.id}, 'nombre', this.value)"></td><td><select class="ant-badge ${ant.clase}" onchange="actualizar(${c.id}, 'antiguedad', this.value)" style="border:none; cursor:pointer;">${Object.entries(ANTIGUEDAD).map(([k,v]) => `<option value="${k}" ${c.antiguedad===k?'selected':''}>${v.label}</option>`).join('')}</select></td><td class="editable" style="width:140px;"><input type="text" value="${escapeHtml(c.telefono)}" onchange="actualizar(${c.id}, 'telefono', this.value)" placeholder="Cargar..."></td><td class="monto editable" style="width:140px;"><input type="number" value="${c.monto}" onchange="actualizar(${c.id}, 'monto', this.value)" style="text-align:right;" step="0.01"></td><td><select class="status-select ${est.clase}" onchange="actualizar(${c.id}, 'estado', this.value)">${Object.entries(ESTADOS).map(([k,v]) => `<option value="${k}" ${c.estado===k?'selected':''}>${v.label}</option>`).join('')}</select></td><td class="editable" style="min-width:140px;"><input type="text" value="${escapeHtml(c.notas)}" onchange="actualizar(${c.id}, 'notas', this.value)" placeholder="..."></td><td style="text-align:center; white-space:nowrap;"><button class="btn btn-wsp" onclick='abrirWsp(${JSON.stringify(c).replace(/'/g, "&apos;")})'>Cobranza</button><button class="btn btn-danger" onclick="eliminarCliente(${c.id})">✕</button></td></tr>`;
+    return `<tr><td class="editable" style="width:80px; min-width:70px;"><input type="text" value="${escapeHtml(c.nroCliente)}" onchange="actualizar(${c.id}, 'nroCliente', this.value)"></td><td class="editable" style="min-width:200px;"><input type="text" value="${escapeHtml(c.nombre)}" onchange="actualizar(${c.id}, 'nombre', this.value)"></td><td><select class="ant-badge ${ant.clase}" onchange="actualizar(${c.id}, 'antiguedad', this.value)" style="border:none; cursor:pointer;">${Object.entries(ANTIGUEDAD).map(([k,v]) => `<option value="${k}" ${c.antiguedad===k?'selected':''}>${v.label}</option>`).join('')}</select></td><td class="editable" style="width:150px; min-width:140px;"><input type="text" value="${escapeHtml(c.telefono)}" onchange="actualizar(${c.id}, 'telefono', this.value)" placeholder="Cargar..."></td><td class="monto editable" style="width:160px; min-width:150px;"><input type="text" inputmode="decimal" value="${fmtNum(c.monto)}" onfocus="this.select()" onchange="actualizar(${c.id}, 'monto', this.value)" style="text-align:right;"></td><td><select class="status-select ${est.clase}" onchange="actualizar(${c.id}, 'estado', this.value)">${Object.entries(ESTADOS).map(([k,v]) => `<option value="${k}" ${c.estado===k?'selected':''}>${v.label}</option>`).join('')}</select></td><td class="editable" style="min-width:140px;"><input type="text" value="${escapeHtml(c.notas)}" onchange="actualizar(${c.id}, 'notas', this.value)" placeholder="..."></td><td style="text-align:center; white-space:nowrap;"><button class="btn btn-wsp" title="${c.telefono ? 'Enviar cobranza por WhatsApp' : 'Sin teléfono: abre el mensaje para copiar'}" onclick="enviarWsp(${c.id})">${WSP_ICON} WhatsApp</button><button class="btn btn-danger" onclick="eliminarCliente(${c.id})">✕</button></td></tr>`;
   }).join('');
 }
 
